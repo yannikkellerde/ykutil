@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+[project]
+name = "ykutil"
+dynamic = ["version"]
+dependencies = [
+  "tqdm"
+]
+requires-python = ">= 3.10"
+authors = [
+  {name = "Yannik Keller", email = "yannik@kelnet.de"},
+]
+description = "These are my utilities. Hands off! (Or not, feel free to use)"
+readme = "README.md"
+license = {text = "MIT License"}
+keywords = ["util"]
+[project.optional-dependencies]
+all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "accelerate"]
+[tool.hatch.version]
+path = "ykutil/__init__.py"
