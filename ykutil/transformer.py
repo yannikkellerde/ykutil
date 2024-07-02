@@ -1,14 +1,16 @@
+from dataclasses import dataclass
 import json
 import os
 from functools import lru_cache
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Any
 
 import torch
 from peft import AutoPeftModelForCausalLM
 from tokenizers import Encoding
 from torch.nn.functional import log_softmax
 from tqdm import trange
+from torch.nn.utils.rnn import pad_sequence
 from transformer_heads import load_lora_with_heads
 from transformer_heads.output import HeadedModelOutput
 from transformer_heads.util.helpers import get_model_params
@@ -191,3 +193,42 @@ def get_token_begins(encoding: Encoding | BatchEncoding):
         return get_start(encoding.offsets)
     else:
         return [get_start(x.offsets) for x in encoding.encodings]
+
+
+@dataclass
+class DataCollatorWithPadding:
+    """
+    A data collator that pads sequences to the same length.
+
+    Attributes:
+        feature_name_to_padding_value (dict[str, int]): A dictionary mapping feature names to their padding values.
+
+    Methods:
+        __call__(features: List[Dict[str, Any]]) -> Dict[str, Any]: Pad the sequences in the features to the same length.
+    """
+
+    feature_name_to_padding_value: dict[str, int | float]
+
+    def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Pad the sequences in the features to the same length.
+
+        Args:
+            features (List[Dict[str, Any]]): A list of features, where each feature is a dictionary mapping feature names to sequences.
+
+        Returns:
+            Dict[str, Any]: A dictionary mapping feature names to padded sequences.
+        """
+        batch = dict()
+        for key, value in self.feature_name_to_padding_value.items():
+            batch[key] = pad_sequence(
+                [feature[key].clone().detach() for feature in features],
+                batch_first=True,
+                padding_value=value,
+            )
+        for key in features[0].keys():
+            if key not in self.feature_name_to_padding_value:
+                batch[key] = torch.stack(
+                    [feature[key].clone().detach() for feature in features]
+                )
+        return batch

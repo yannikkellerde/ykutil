@@ -31,7 +31,7 @@ from .python import (
     transpose_li_of_dict,
     update_running_avg,
 )
-from .statistics import Statlogger
+from .statistics import Statlogger, Welfords
 from .types import T
 
 if find_spec("torch") is not None:

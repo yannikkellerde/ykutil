@@ -1,3 +1,4 @@
+from math import sqrt
 from collections import defaultdict
 
 
@@ -26,3 +27,21 @@ class Statlogger:
         some_dic = self.statistics.copy()
         some_dic.update(self.sum_stats)
         return some_dic
+
+
+class Welfords:
+    def __init__(self):
+        self.count: int = 0
+        self.mean: float = 0.0
+        self.M2: float = 0.0
+
+    def update(self, new_value):
+        self.count += 1
+        delta = new_value - self.mean
+        self.mean += delta / self.count
+        delta2 = new_value - self.mean
+        self.M2 += delta * delta2
+
+    @property
+    def std(self) -> float:
+        return sqrt(self.M2 / self.count) if self.count > 1 else 0.0
