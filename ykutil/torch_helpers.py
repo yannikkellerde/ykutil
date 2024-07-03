@@ -5,8 +5,10 @@ import torch
 
 def rolling_window(a, size):
     """
-    In: Tensor([1,2,3]), 2
-    Out: Tensor([[1,2],[2,3]])
+    >>> from torch import Tensor
+    >>> rolling_window(Tensor([1,2,3]), 2)
+    tensor([[1., 2.],
+            [2., 3.]])
     """
     size = a.shape[:-1] + (a.shape[-1] - size + 1, size)
     strides = a.stride() + (a.stride()[-1],)
@@ -15,8 +17,9 @@ def rolling_window(a, size):
 
 def find_all_subarray_poses(arr, subarr, end=False):
     """
-    In: Tensor([1,2,3,4,5,1,2,3]), Tensor([1,2])
-    Out: Tensor([0,5])
+    >>> from torch import Tensor
+    >>> find_all_subarray_poses(Tensor([1,2,3,4,5,1,2,3]), Tensor([1,2]))
+    tensor([0, 5])
     """
     if len(subarr) > len(arr):
         return torch.tensor([], dtype=torch.int64)
@@ -36,8 +39,9 @@ def disable_gradients(model: torch.nn.Module):
 
 def tensor_in(needles: torch.Tensor, haystack: torch.Tensor):
     """
-    In: Tensor([7,3,4,1,9,12]), Tensor([9,4,13,3,0])
-    Out: Tensor([False,True,True,False,True,False])
+    >>> from torch import Tensor
+    >>> tensor_in(Tensor([7,3,4,1,9,12]), Tensor([9,4,13,3,0]))
+    tensor([False,  True,  True, False,  True, False])
     """
     assert needles.ndim == haystack.ndim == 1
     if len(needles) == 0:
@@ -61,3 +65,9 @@ def print_memory_info():
 def free_cuda_memory():
     gc.collect()
     torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
