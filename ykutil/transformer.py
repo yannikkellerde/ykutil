@@ -1,9 +1,12 @@
 from dataclasses import dataclass
+import re
+import functools
 import json
 import os
 from functools import lru_cache
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence, Any
+import itertools
+from typing import Dict, List, Optional, Sequence, Any, Iterable
 
 import torch
 from peft import AutoPeftModelForCausalLM
@@ -24,7 +27,7 @@ from transformers import (
     StoppingCriteria,
 )
 
-from .python import list_squeeze
+from ykutil.python import list_squeeze
 
 
 @lru_cache()
@@ -43,16 +46,128 @@ def load_tk_with_pad_tk(model_path):
     return tk
 
 
+have_warned = False
+
+
+def obtain_offsets(
+    be: BatchEncoding, str_lengths: Optional[List[int]] = None
+) -> list[list[tuple[int, int]]]:
+    """
+    >>> from transformers import AutoTokenizer
+    >>> obtain_offsets(AutoTokenizer.from_pretrained("gpt2")("Hello, my dog is cute."))
+    [[(0, 5), (5, 6), (6, 9), (9, 13), (13, 16), (16, 21), (21, 22)]]
+    >>> tk = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
+    >>> tk.pad_token = tk.eos_token
+    >>> obtain_offsets(tk("Hello, my dog is cute."), [22])
+    Broken offsets detected. This is a known bug for llama3. Will try to fix it.
+    [[(0, 0), (0, 5), (5, 6), (6, 9), (9, 13), (13, 16), (16, 21), (21, 22)]]
+    >>> obtain_offsets(tk(["Hello, my dog is cute.", "Big Tree"], return_tensors="pt", padding=True), [22, 8])[1]
+    [(0, 0), (0, 3), (3, 8), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]
+    """
+    global have_warned
+    offsets = [x.offsets for x in be.encodings]
+    if not all(
+        functools.reduce(
+            lambda x, y: ((x[1] == y[0] or y[0] == y[1] == 0) and x[0], y[1]),
+            li,
+            (True, 0),
+        )[0]
+        for li in offsets
+    ):
+        if not have_warned:
+            print(
+                "Broken offsets detected. This is a known bug for llama3. Will try to fix it."
+            )
+            have_warned = True
+        assert str_lengths is not None, "Cannot fix offsets without str_lengths"
+        for o, sl in zip(offsets, str_lengths):
+            beyond_start = False
+            for i in range(len(o)):
+                if o[i] != (0, 0):
+                    beyond_start = True
+                if i == len(o) - 1 or (beyond_start and o[i + 1] == (0, 0)):
+                    if o[i] != (0, 0):
+                        o[i] = (o[i][0], sl)
+                else:
+                    o[i] = (o[i][0], o[i + 1][0])
+    return offsets
+
+
 def batch_tokenization(
-    tk: PreTrainedTokenizer, texts: List[str], batch_size: int, **tk_args
+    tk: PreTrainedTokenizer,
+    texts: List[str],
+    batch_size: int,
+    include_offsets: bool = False,
+    **tk_args,
 ):
     """Use when batch of texts too large to be tokenized at once"""
     out = {"input_ids": [], "attention_mask": []}
+    if include_offsets:
+        out["offsets"] = []
     for s in trange(0, len(texts), batch_size, desc="Batch tokenization"):
         stuff = tk(texts[s : s + batch_size], **tk_args)
         out["input_ids"].extend(stuff["input_ids"])
         out["attention_mask"].extend(stuff["attention_mask"])
+        if include_offsets:
+            out["offsets"].extend(
+                obtain_offsets(stuff, [len(x) for x in texts[s : s + batch_size]])
+            )
     return out
+
+
+def transform_with_offsets(
+    offsets: list[tuple[int, int]],
+    spans: list[tuple[int, int]],
+    include_left=True,
+    include_right=True,
+):
+    """
+    >>> transform_with_offsets([(0, 3), (3, 6), (6, 9)], [(1, 2), (4, 8)])
+    [(0, 0), (1, 2)]
+    >>> transform_with_offsets([(0, 3), (3, 6), (6, 9)], [(1, 4), (5, 8)], include_left=False)
+    [(1, 1), (2, 2)]
+    >>> transform_with_offsets([(0, 3), (3, 6), (6, 9)], [(1, 7)], include_left=False, include_right=False)
+    [(1, 1)]
+    >>> transform_with_offsets([(0, 3), (3, 6), (6, 9)], [(0, 8)], include_left=False, include_right=False)
+    [(0, 2)]
+    """
+    out_offsets = []
+    offset_index = 0
+    for i, num in enumerate(itertools.chain.from_iterable(spans)):
+        for j in range(offset_index, len(offsets)):
+            if offsets[j][0] <= num < offsets[j][1]:
+                if not i % 2 and not include_left and num != offsets[j][0]:
+                    out_offsets.append(j + 1)
+                elif i % 2 and not include_right and num != offsets[j][1] - 1:
+                    out_offsets.append(j - 1)
+                else:
+                    out_offsets.append(j)
+                offset_index = j
+                break
+
+    return list(zip(out_offsets[::2], out_offsets[1::2]))
+
+
+def regex_tokens_using_offsets(
+    offsets: list[tuple[int, int]],
+    text: str,
+    regex: str | re.Pattern,
+    include_left=True,
+    include_right=True,
+):
+    """
+    >>> regex_tokens_using_offsets([(0, 3), (3, 6), (6, 9)], "abc def ghi", "d")
+    [(1, 1)]
+    >>> regex_tokens_using_offsets([(0, 5), (5, 11), (11, 17)], "I am I and great", r"I \\w+",)
+    [(0, 0), (1, 1)]
+    """
+    if isinstance(regex, str):
+        regex = re.compile(regex)
+
+    spans = [x.span() for x in regex.finditer(text)]
+    return transform_with_offsets(
+        offsets, spans, include_left=include_left, include_right=include_right
+    )
 
 
 def tokenize_instances(
@@ -232,3 +347,9 @@ class DataCollatorWithPadding:
                     [feature[key].clone().detach() for feature in features]
                 )
         return batch
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
