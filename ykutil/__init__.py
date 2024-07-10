@@ -32,7 +32,10 @@ from .python import (
     update_running_avg,
 )
 from .statistics import Statlogger, Welfords
-from .types import T
+from .types import T, describe_type
+
+if find_spec("datasets") is not None:
+    from .datasets import describe_dataset
 
 if find_spec("torch") is not None:
     from .torch_helpers import (

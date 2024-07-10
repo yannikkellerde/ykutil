@@ -19,3 +19,5 @@ keywords = ["util"]
 all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "accelerate"]
 [tool.hatch.version]
 path = "ykutil/__init__.py"
+[project.scripts]
+attach = "ykutil.executable:describe_dataset"
