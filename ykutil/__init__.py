@@ -73,6 +73,10 @@ if find_spec("torch") is not None:
                 load_maybe_peft_model_tokenizer,
                 load_tk_with_pad_tk,
                 tokenize_instances,
+                regex_tokens_using_offsets,
+                obtain_offsets,
+                transform_with_offsets,
+                dict_from_chat_template,
             )
 
 __version__ = "0.0.1"

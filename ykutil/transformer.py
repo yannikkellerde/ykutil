@@ -349,6 +349,23 @@ class DataCollatorWithPadding:
         return batch
 
 
+def dict_from_chat_template(chat_template_str: str, tk_type="llama3"):
+    """
+    >>> from transformers import AutoTokenizer
+    >>> tk = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
+    >>> msg_dict = [{"role":"system", "content":"You are assistant"}, {"role":"user", "content":"I am user"}, {"role":"assistant", "content":"I am assistant"}]
+    >>> assert dict_from_chat_template(tk.apply_chat_template(msg_dict, tokenize=False, add_generation_prompt=False)) == msg_dict
+    """
+    if tk_type == "llama3":
+        rex = re.compile(
+            r"(<\|eot_id\|>|<\|begin_of_text\|>)?<\|start_header_id\|>(\w+)<\|end_header_id\|>\n\n(.*)<\|eot_id\|>"
+        )
+        return [
+            {"role": m.group(2), "content": m.group(3)}
+            for m in rex.finditer(chat_template_str)
+        ]
+
+
 if __name__ == "__main__":
     import doctest
 
