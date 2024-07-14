@@ -80,6 +80,7 @@ if find_spec("torch") is not None:
                 obtain_offsets,
                 transform_with_offsets,
                 dict_from_chat_template,
+                DataCollatorWithPadding,
             )
 
 __version__ = "0.0.1"
