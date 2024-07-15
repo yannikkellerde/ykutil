@@ -323,6 +323,7 @@ class DataCollatorWithPadding:
     """
 
     feature_name_to_padding_value: dict[str, int | float]
+    padding_side: str = "right"
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -336,11 +337,27 @@ class DataCollatorWithPadding:
         """
         batch = dict()
         for key, value in self.feature_name_to_padding_value.items():
-            batch[key] = pad_sequence(
-                [feature[key].clone().detach() for feature in features],
-                batch_first=True,
-                padding_value=value,
-            )
+            if self.padding_side == "right":
+                batch[key] = pad_sequence(
+                    [feature[key].clone().detach() for feature in features],
+                    batch_first=True,
+                    padding_value=value,
+                )
+            elif self.padding_side == "left":
+                print(type(features[0][key]))
+                batch[key] = pad_sequence(
+                    [
+                        feature[key].clone().detach().flip(dims=[0])
+                        for feature in features
+                    ],
+                    batch_first=True,
+                    padding_value=value,
+                ).flip(dims=[1])
+            else:
+                raise ValueError(
+                    f"padding_side must be either 'right' or 'left', but got {self.padding_side}."
+                )
+
         for key in features[0].keys():
             if key not in self.feature_name_to_padding_value:
                 batch[key] = torch.stack(
@@ -358,8 +375,11 @@ def dict_from_chat_template(chat_template_str: str, tk_type="llama3"):
     """
     if tk_type == "llama3":
         rex = re.compile(
-            r"(<\|eot_id\|>|<\|begin_of_text\|>)?<\|start_header_id\|>(\w+)<\|end_header_id\|>\n\n(.*)<\|eot_id\|>"
+            r"(<\|eot_id\|>|<\|begin_of_text\|>)?<\|start_header_id\|>(\w+)<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>"
         )
+        print(chat_template_str)
+        print([x.group(3) for x in rex.finditer(chat_template_str)])
+        exit()
         return [
             {"role": m.group(2), "content": m.group(3)}
             for m in rex.finditer(chat_template_str)
