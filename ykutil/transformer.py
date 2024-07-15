@@ -344,7 +344,6 @@ class DataCollatorWithPadding:
                     padding_value=value,
                 )
             elif self.padding_side == "left":
-                print(type(features[0][key]))
                 batch[key] = pad_sequence(
                     [
                         feature[key].clone().detach().flip(dims=[0])
@@ -360,9 +359,20 @@ class DataCollatorWithPadding:
 
         for key in features[0].keys():
             if key not in self.feature_name_to_padding_value:
-                batch[key] = torch.stack(
-                    [feature[key].clone().detach() for feature in features]
-                )
+                if isinstance(features[0][key], torch.Tensor):
+                    batch[key] = torch.stack(
+                        [feature[key].clone().detach() for feature in features]
+                    )
+                elif isinstance(features[0][key], list) and type(
+                    features[0][key][0]
+                ) in (
+                    int,
+                    float,
+                ):
+                    batch[key] = torch.stack([feature[key] for feature in features])
+                else:
+                    batch[key] = [feature[key] for feature in features]
+
         return batch
 
 
@@ -377,9 +387,6 @@ def dict_from_chat_template(chat_template_str: str, tk_type="llama3"):
         rex = re.compile(
             r"(<\|eot_id\|>|<\|begin_of_text\|>)?<\|start_header_id\|>(\w+)<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>"
         )
-        print(chat_template_str)
-        print([x.group(3) for x in rex.finditer(chat_template_str)])
-        exit()
         return [
             {"role": m.group(2), "content": m.group(3)}
             for m in rex.finditer(chat_template_str)
