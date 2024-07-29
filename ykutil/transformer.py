@@ -401,6 +401,16 @@ def dict_from_chat_template(chat_template_str: str, tk_type="llama3"):
         raise ValueError(f"Unknown tk_type: {tk_type}")
 
 
+def tokenize(tk_name: str, text: str):
+    tk = AutoTokenizer.from_pretrained(tk_name)
+    return tk(text)
+
+
+def untokenize(tk_name: str, tokens: List[int]):
+    tk = AutoTokenizer.from_pretrained(tk_name)
+    return tk.decode(tokens)
+
+
 if __name__ == "__main__":
     import doctest
 

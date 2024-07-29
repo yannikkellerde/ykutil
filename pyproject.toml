@@ -21,3 +21,5 @@ all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "ac
 path = "ykutil/__init__.py"
 [project.scripts]
 describe_datset = "ykutil.executable:describe_dataset"
+tokenize = "ykutil.executable:tokenize"
+untokenize = "ykutil.executable:untokenize"

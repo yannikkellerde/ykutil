@@ -80,8 +80,10 @@ if find_spec("torch") is not None:
                 load_tk_with_pad_tk,
                 obtain_offsets,
                 regex_tokens_using_offsets,
+                tokenize,
                 tokenize_instances,
                 transform_with_offsets,
+                untokenize,
             )
 
 __version__ = "0.0.1"
