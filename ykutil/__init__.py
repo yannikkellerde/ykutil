@@ -3,6 +3,7 @@ from importlib.util import find_spec
 
 from .constants import DEFAULT_PAD_TOKEN, IGNORE_INDEX, SPACE_TOKENIZERS
 from .data_model import stringify_tuple_keys, summed_stat_dc, undefaultdict
+from .logging import log
 from .python import (
     all_equal,
     chunk_list,
@@ -35,7 +36,7 @@ from .statistics import Statlogger, Welfords
 from .types import T, describe_type
 
 if find_spec("datasets") is not None:
-    from .datasets import describe_dataset
+    from .dataset import describe_dataset
 
 if find_spec("torch") is not None:
     from .torch_helpers import (
@@ -68,19 +69,19 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
             from .transformer import (
+                DataCollatorWithPadding,
                 TokenStoppingCriteria,
                 batch_tokenization,
                 compute_seq_log_probability,
+                dict_from_chat_template,
                 find_tokens_with_str,
                 flat_encode,
                 load_maybe_peft_model_tokenizer,
                 load_tk_with_pad_tk,
-                tokenize_instances,
-                regex_tokens_using_offsets,
                 obtain_offsets,
+                regex_tokens_using_offsets,
+                tokenize_instances,
                 transform_with_offsets,
-                dict_from_chat_template,
-                DataCollatorWithPadding,
             )
 
 __version__ = "0.0.1"

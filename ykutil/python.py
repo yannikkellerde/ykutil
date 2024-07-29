@@ -197,6 +197,14 @@ def transpose_li_of_dict(lidic: list[dict]):
     return {k: [d[k] for d in lidic] for k in lidic[0].keys()}
 
 
+def transpose_dict_of_li(d: dict[Any, list]):
+    """
+    >>> transpose_dict_of_li({"a": [1, 3], "b": [2, 4]})
+    [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]
+    """
+    return [dict(zip(d.keys(), x)) for x in zip(*d.values())]
+
+
 def flatten(li: list[list]) -> list:
     """
     >>> flatten([[1, 2], [3, 4]])

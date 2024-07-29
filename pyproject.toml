@@ -20,4 +20,4 @@ all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "ac
 [tool.hatch.version]
 path = "ykutil/__init__.py"
 [project.scripts]
-attach = "ykutil.executable:describe_dataset"
+describe_datset = "ykutil.executable:describe_dataset"

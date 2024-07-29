@@ -1,5 +1,5 @@
-from math import sqrt
 from collections import defaultdict
+from math import sqrt
 
 
 class Statlogger:
@@ -45,3 +45,9 @@ class Welfords:
     @property
     def std(self) -> float:
         return sqrt(self.M2 / self.count) if self.count > 1 else 0.0
+
+    def normalize(self, value):
+        return (value - self.mean) / self.std if self.std > 0 else 0.0
+
+    def unnormalize(self, value):
+        return value * self.std + self.mean

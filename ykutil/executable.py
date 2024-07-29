@@ -1,4 +1,4 @@
-from ykutil.datasets import describe_dataset as ds_describe_dataset
+from ykutil.dataset import describe_dataset as ds_describe_dataset
 
 
 def describe_dataset(

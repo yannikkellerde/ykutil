@@ -1,19 +1,19 @@
-from dataclasses import dataclass
-import re
 import functools
+import itertools
 import json
 import os
+import re
+from dataclasses import dataclass
 from functools import lru_cache
 from operator import itemgetter
-import itertools
-from typing import Dict, List, Optional, Sequence, Any, Iterable
+from typing import Any, Dict, List, Optional, Sequence
 
 import torch
 from peft import AutoPeftModelForCausalLM
 from tokenizers import Encoding
 from torch.nn.functional import log_softmax
-from tqdm import trange
 from torch.nn.utils.rnn import pad_sequence
+from tqdm import trange
 from transformer_heads import load_lora_with_heads
 from transformer_heads.output import HeadedModelOutput
 from transformer_heads.util.helpers import get_model_params
@@ -144,6 +144,9 @@ def transform_with_offsets(
                     out_offsets.append(j)
                 offset_index = j
                 break
+        else:
+            assert i % 2, f"Span out of bounds, {(i,offsets[j],num)}"
+            out_offsets.append(j - 1)
 
     return list(zip(out_offsets[::2], out_offsets[1::2]))
 
@@ -385,12 +388,17 @@ def dict_from_chat_template(chat_template_str: str, tk_type="llama3"):
     """
     if tk_type == "llama3":
         rex = re.compile(
-            r"(<\|eot_id\|>|<\|begin_of_text\|>)?<\|start_header_id\|>(\w+)<\|end_header_id\|>\n\n(.*?)<\|eot_id\|>"
+            r"(<\|eot_id\|>|<\|begin_of_text\|>)?<\|start_header_id\|>(\w+)<\|end_header_id\|>\n\n(.*?)(<\|eot_id\|>|$)",
+            re.DOTALL,
         )
         return [
             {"role": m.group(2), "content": m.group(3)}
             for m in rex.finditer(chat_template_str)
         ]
+    elif tk_type == "gpt2":
+        raise NotImplementedError("gpt2 not implemented")
+    else:
+        raise ValueError(f"Unknown tk_type: {tk_type}")
 
 
 if __name__ == "__main__":
