@@ -146,7 +146,7 @@ def transform_with_offsets(
                 break
         else:
             assert i % 2, f"Span out of bounds, {(i,offsets[j],num)}"
-            out_offsets.append(j - 1)
+            out_offsets.append(j + 1)
 
     return list(zip(out_offsets[::2], out_offsets[1::2]))
 

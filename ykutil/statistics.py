@@ -51,3 +51,6 @@ class Welfords:
 
     def unnormalize(self, value):
         return value * self.std + self.mean
+
+    def __repr__(self):
+        return f"Welfords(Mean: {self.mean}, Std: {self.std}, Count: {self.count})"

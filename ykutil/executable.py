@@ -1,3 +1,4 @@
+import argparse
 from ast import literal_eval
 
 from ykutil.dataset import describe_dataset as ds_describe_dataset
@@ -26,3 +27,32 @@ def untokenize(tk: str, tokens: str):
     from ykutil.transformer import untokenize as tk_untokenize
 
     return tk_untokenize(tk_name=tk, tokens=literal_eval(tokens))
+
+
+def do_describe_dataset():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ds_name", type=str)
+    parser.add_argument("--tokenizer_name", type=str, default=None)
+    parser.add_argument("--show_rows", type=int, nargs="+", default=(0, 3))
+    args = parser.parse_args()
+    return describe_dataset(
+        ds_name=args.ds_name,
+        tokenizer_name=args.tokenizer_name,
+        show_rows=tuple(args.show_rows),
+    )
+
+
+def to_tokenizer():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("tk", type=str)
+    parser.add_argument("text", type=str)
+    args = parser.parse_args()
+    return tokenize(tk=args.tk, text=args.text)
+
+
+def to_untokenize():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("tk", type=str)
+    parser.add_argument("tokens", type=str)
+    args = parser.parse_args()
+    return untokenize(tk=args.tk, tokens=args.tokens)
