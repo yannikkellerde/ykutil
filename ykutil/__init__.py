@@ -3,7 +3,7 @@ from importlib.util import find_spec
 
 from .constants import DEFAULT_PAD_TOKEN, IGNORE_INDEX, SPACE_TOKENIZERS
 from .data_model import stringify_tuple_keys, summed_stat_dc, undefaultdict
-from .logging import log
+from .logging import add_file_handler, log
 from .python import (
     all_equal,
     chunk_list,
@@ -37,6 +37,9 @@ from .types import T, describe_type
 
 if find_spec("datasets") is not None:
     from .dataset import describe_dataset
+
+if find_spec("dacite") is not None and find_spec("pyyaml") is not None:
+    from .configuration import from_file
 
 if find_spec("torch") is not None:
     from .torch_helpers import (

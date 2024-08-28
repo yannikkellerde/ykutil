@@ -18,6 +18,12 @@ level_map = {
 }
 
 
+def add_file_handler(file_path):
+    fl = logging.FileHandler(file_path, mode="w")
+    fl.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
+    logger.addHandler(fl)
+
+
 def log(*messages, level=logging.INFO):
     if type(level) == str:
         level = level_map[level.upper()]
