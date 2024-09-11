@@ -8,6 +8,7 @@ from .python import (
     all_equal,
     chunk_list,
     dict_percentages,
+    dict_without,
     flatten,
     get_dropped_card,
     hand_to_letter_form,
@@ -38,7 +39,7 @@ from .types import T, describe_type
 if find_spec("datasets") is not None:
     from .dataset import describe_dataset
 
-if find_spec("dacite") is not None and find_spec("pyyaml") is not None:
+if find_spec("dacite") is not None and find_spec("yaml") is not None:
     from .configuration import from_file
 
 if find_spec("torch") is not None:

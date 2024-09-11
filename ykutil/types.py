@@ -1,11 +1,12 @@
 from typing import TypeVar
 
 T = TypeVar("T")
+U = TypeVar("U")
 
 
 def describe_type(t: object) -> str:
-    from torch import Tensor
     import numpy as np
+    from torch import Tensor
 
     if isinstance(t, Tensor):
         return "tensor." + str(t.dtype)

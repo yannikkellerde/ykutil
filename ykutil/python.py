@@ -4,7 +4,7 @@ from typing import Any, Iterable, List
 
 from tqdm import tqdm
 
-from ykutil.types import T
+from ykutil.types import T, U
 
 
 def identity(x):
@@ -348,6 +348,21 @@ def removesuffixes(lst: list[T], suffix: Iterable[T]) -> list[T]:
     while len(lst) > 0 and any(lst[-1] == s for s in suffix):
         lst = lst[:-1]
     return lst
+
+
+def dict_without(d: dict[T, U], without: str | Iterable[T]) -> dict[T, U]:
+    """
+    >>> dict_without({"a": 1, "b": 2, "c": 3}, "a")
+    {'b': 2, 'c': 3}
+    >>> dict_without({"a": 1, "b": 2, "c": 3}, ["a", "b"])
+    {'c': 3}
+    """
+    if isinstance(without, str):
+        without = [without]
+    new_d = d.copy()
+    for key in without:
+        new_d.pop(key, None)
+    return new_d
 
 
 if __name__ == "__main__":
