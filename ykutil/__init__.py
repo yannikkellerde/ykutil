@@ -36,6 +36,9 @@ from .python import (
 from .statistics import Statlogger, Welfords
 from .types import T, describe_type
 
+if find_spec("openai") is not None:
+    from .llm_api import AzureModelWrapper, ModelWrapper
+
 if find_spec("datasets") is not None:
     from .dataset import describe_dataset
 
@@ -90,4 +93,4 @@ if find_spec("torch") is not None:
                 untokenize,
             )
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
