@@ -1,9 +1,10 @@
 import json
 import os
-from typing import Optional
+from typing import Optional, Type
 
 from openai import AzureOpenAI
 from openai._base_client import BaseClient
+from pydantic import BaseModel
 
 
 class ModelWrapper:
@@ -16,17 +17,37 @@ class ModelWrapper:
         self.stats = {"requests": 0, "input_tokens": 0, "completion_tokens": 0}
 
     def complete(self, messages: list[dict[str, str]], **kwargs) -> str:
-        if self.log_file is not None:
-            with open(self.log_file, "a") as f:
-                f.write(json.dumps(messages) + ",\n")
-
         response = self.client.chat.completions.create(
             model=self.model_name, messages=messages, **kwargs
         )
         self.stats["requests"] += 1
         self.stats["input_tokens"] += response.usage.prompt_tokens
         self.stats["completion_tokens"] += response.usage.completion_tokens
+        if self.log_file is not None:
+            msg_copy = messages.copy()
+            msg_copy.append(response.choices[0].message.dict())
+            with open(self.log_file, "a") as f:
+                f.write(json.dumps(msg_copy) + ",\n")
         return response.choices[0].message.content
+
+    def structured_complete(
+        self, messages: list[dict[str, str]], structure_class: Type[BaseModel], **kwargs
+    ) -> BaseModel:
+        response = self.client.beta.chat.completions.parse(
+            model=self.model_name,
+            messages=messages,
+            response_format=structure_class,
+        )
+        self.stats["requests"] += 1
+        self.stats["input_tokens"] += response.usage.prompt_tokens
+        self.stats["completion_tokens"] += response.usage.completion_tokens
+        if self.log_file is not None:
+            msg_copy = messages.copy()
+            msg_copy.append(response.choices[0].message.dict())
+            with open(self.log_file, "a") as f:
+                f.write(json.dumps(msg_copy) + ",\n")
+
+        return response.choices[0].message.parsed
 
     def compute_cost():
         raise NotImplementedError()

@@ -16,7 +16,7 @@ readme = "README.md"
 license = {text = "MIT License"}
 keywords = ["util"]
 [project.optional-dependencies]
-all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "accelerate"]
+all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "accelerate", "openai"]
 [tool.hatch.version]
 path = "ykutil/__init__.py"
 [project.scripts]

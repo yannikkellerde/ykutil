@@ -36,7 +36,10 @@ from .python import (
 from .statistics import Statlogger, Welfords
 from .types import T, describe_type
 
-if find_spec("openai") is not None:
+if find_spec("pandera") is not None:
+    from .pandera import empty_dataframe_from_model
+
+if find_spec("openai") is not None and find_spec("pydantic") is not None:
     from .llm_api import AzureModelWrapper, ModelWrapper
 
 if find_spec("datasets") is not None:
