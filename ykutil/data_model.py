@@ -1,6 +1,7 @@
 from collections import defaultdict
 from copy import copy
 from dataclasses import asdict, is_dataclass
+from typing import Callable
 
 from ykutil.python import recursed_merge_percent_stats, recursed_sum_up_stats
 from ykutil.types import T
@@ -71,3 +72,11 @@ class Serializable(dict):
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
+
+
+def sortedtuple(sort_fun: Callable, fixed_len=None):
+    def __new__(cls, *args):
+        assert fixed_len is None or len(args) == fixed_len
+        return tuple.__new__(cls, sorted(args, key=sort_fun))
+
+    return type("SortedTuple", (tuple,), {"__new__": __new__})
