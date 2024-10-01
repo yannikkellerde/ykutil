@@ -1,6 +1,7 @@
 import argparse
 from ast import literal_eval
 
+from ykutil.dataset import colorcode_entry
 from ykutil.dataset import describe_dataset as ds_describe_dataset
 
 
@@ -56,3 +57,22 @@ def do_untokenize():
     parser.add_argument("tokens", type=str)
     args = parser.parse_args()
     return untokenize(tk=args.tk, tokens=args.tokens)
+
+
+def do_colorcode_dataset():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ds_path", type=str)
+    parser.add_argument("--tokenizer", type=str, default="mistralai/Mistral-7B-v0.1")
+    parser.add_argument("--output", type=str, default=None)
+    parser.add_argument("--start", type=int, default=0)
+    parser.add_argument("--end", type=int, default=1)
+    parser.add_argument("--ugly", action="store_true")
+    args = parser.parse_args()
+    return colorcode_entry(
+        token_ds_path=args.ds_path,
+        fname=args.output,
+        tokenizer_path=args.tokenizer,
+        num_start=args.start,
+        num_end=args.end,
+        beautify=not args.ugly,
+    )

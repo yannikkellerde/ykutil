@@ -20,6 +20,7 @@ all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "ac
 [tool.hatch.version]
 path = "ykutil/__init__.py"
 [project.scripts]
-describe_datset = "ykutil.executable:do_describe_dataset"
+describe_dataset = "ykutil.executable:do_describe_dataset"
 tokenize = "ykutil.executable:do_tokenize"
 untokenize = "ykutil.executable:do_untokenize"
+colorcode_ds = "ykutil.executable:do_colorcode_dataset"

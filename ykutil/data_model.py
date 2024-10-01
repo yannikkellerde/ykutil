@@ -1,6 +1,6 @@
 from collections import defaultdict
 from copy import copy
-from dataclasses import is_dataclass
+from dataclasses import asdict, is_dataclass
 
 from ykutil.python import recursed_merge_percent_stats, recursed_sum_up_stats
 from ykutil.types import T
@@ -50,3 +50,24 @@ def stringify_tuple_keys(d: dict | object):
             del k[key]
             k[str(key)] = value
     return d
+
+
+class Serializable(dict):
+    """Inherit from this when creating a dataclass to make it
+    json serializable and hashable.
+    """
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.items())))
+
+    def items(self):
+        return asdict(self).items()
+
+    def __len__(self):
+        return len(asdict(self))
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result

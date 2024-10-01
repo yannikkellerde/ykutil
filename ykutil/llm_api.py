@@ -4,7 +4,10 @@ from typing import Optional, Type
 
 from openai import AzureOpenAI
 from openai._base_client import BaseClient
+from openai.types.chat import ParsedChatCompletionMessage
 from pydantic import BaseModel
+
+from ykutil import T
 
 
 class ModelWrapper:
@@ -31,8 +34,8 @@ class ModelWrapper:
         return response.choices[0].message.content
 
     def structured_complete(
-        self, messages: list[dict[str, str]], structure_class: Type[BaseModel], **kwargs
-    ) -> BaseModel:
+        self, messages: list[dict[str, str]], structure_class: Type[T], **kwargs
+    ) -> ParsedChatCompletionMessage[T]:
         response = self.client.beta.chat.completions.parse(
             model=self.model_name,
             messages=messages,
@@ -47,7 +50,7 @@ class ModelWrapper:
             with open(self.log_file, "a") as f:
                 f.write(json.dumps(msg_copy) + ",\n")
 
-        return response.choices[0].message.parsed
+        return response.choices[0].message
 
     def compute_cost():
         raise NotImplementedError()

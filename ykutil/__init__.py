@@ -2,7 +2,12 @@ import pkgutil
 from importlib.util import find_spec
 
 from .constants import DEFAULT_PAD_TOKEN, IGNORE_INDEX, SPACE_TOKENIZERS
-from .data_model import stringify_tuple_keys, summed_stat_dc, undefaultdict
+from .data_model import (
+    Serializable,
+    stringify_tuple_keys,
+    summed_stat_dc,
+    undefaultdict,
+)
 from .logging import add_file_handler, log
 from .python import (
     all_equal,
@@ -43,7 +48,7 @@ if find_spec("openai") is not None and find_spec("pydantic") is not None:
     from .llm_api import AzureModelWrapper, ModelWrapper
 
 if find_spec("datasets") is not None:
-    from .dataset import describe_dataset
+    from .dataset import colorcode_dataset, colorcode_entry, describe_dataset
 
 if find_spec("dacite") is not None and find_spec("yaml") is not None:
     from .configuration import from_file
