@@ -4,6 +4,7 @@ from importlib.util import find_spec
 from .constants import DEFAULT_PAD_TOKEN, IGNORE_INDEX, SPACE_TOKENIZERS
 from .data_model import (
     Serializable,
+    sortedtuple,
     stringify_tuple_keys,
     summed_stat_dc,
     undefaultdict,
