@@ -43,7 +43,7 @@ def do_describe_dataset():
     )
 
 
-def do_tokenizer():
+def do_tokenize():
     parser = argparse.ArgumentParser()
     parser.add_argument("tk", type=str)
     parser.add_argument("text", type=str)

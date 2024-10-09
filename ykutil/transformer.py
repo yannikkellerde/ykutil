@@ -326,6 +326,7 @@ class DataCollatorWithPadding:
     """
 
     feature_name_to_padding_value: dict[str, int | float]
+    feature_name_to_new_data_type: dict[str, torch.dtype] = dict()
     padding_side: str = "right"
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -375,6 +376,9 @@ class DataCollatorWithPadding:
                     batch[key] = torch.stack([feature[key] for feature in features])
                 else:
                     batch[key] = [feature[key] for feature in features]
+
+        for key, dtype in self.feature_name_to_new_data_type.items():
+            batch[key] = batch[key].to(dtype)
 
         return batch
 

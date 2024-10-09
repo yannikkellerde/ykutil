@@ -2,8 +2,6 @@ import inspect
 import logging
 import os
 
-from termcolor import colored
-
 logger = logging.getLogger("log_util")
 logger.setLevel(logging.INFO)
 hl = logging.StreamHandler()
@@ -25,6 +23,8 @@ def add_file_handler(file_path):
 
 
 def log(*messages, level=logging.INFO):
+    from termcolor import colored
+
     if type(level) == str:
         level = level_map[level.upper()]
     caller = inspect.stack()[1]

@@ -10,6 +10,10 @@ from pydantic import BaseModel
 from ykutil import T
 
 
+def human_readable_parse(messages: list[dict[str, str]]):
+    return "\n".join([f'{msg["role"]}:\n{msg["content"]}' for msg in messages])
+
+
 class ModelWrapper:
     def __init__(
         self, client: BaseClient, model_name: str, log_file: Optional[str] = None
@@ -57,10 +61,15 @@ class ModelWrapper:
 
 
 class AzureModelWrapper(ModelWrapper):
-    def __init__(self, model_name: str = "gpt-4o", log_file=None):
+    def __init__(
+        self,
+        model_name: str = "gpt-4o",
+        log_file=None,
+        api_version="2024-08-01-preview",
+    ):
         self.client = AzureOpenAI(
             api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
-            api_version="2024-02-01",
+            api_version=api_version,
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
         )
         super().__init__(self.client, model_name, log_file)
@@ -77,8 +86,12 @@ class AzureModelWrapper(ModelWrapper):
                     input_token_cost = 0.000165 / 1000
                     output_token_cost = 0.00066 / 1000
                 else:
-                    input_token_cost = 0.005 / 1000
-                    output_token_cost = 0.015 / 1000
+                    if "2024-08-06" in self.model_name:
+                        input_token_cost = 0.0025 / 1000
+                        output_token_cost = 0.010 / 1000
+                    else:
+                        input_token_cost = 0.005 / 1000
+                        output_token_cost = 0.015 / 1000
             elif "gpt-35" in self.model_name:
                 input_token_cost = 0.0005 / 1000
                 output_token_cost = 0.0015 / 1000
