@@ -3,7 +3,7 @@ import itertools
 import json
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from operator import itemgetter
 from typing import Any, Dict, List, Optional, Sequence
@@ -326,7 +326,7 @@ class DataCollatorWithPadding:
     """
 
     feature_name_to_padding_value: dict[str, int | float]
-    feature_name_to_new_data_type: dict[str, torch.dtype] = dict()
+    feature_name_to_new_data_type: dict[str, torch.dtype] = field(default_factory=dict)
     padding_side: str = "right"
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -342,17 +342,38 @@ class DataCollatorWithPadding:
         batch = dict()
         for key, value in self.feature_name_to_padding_value.items():
             if self.padding_side == "right":
+                if key in self.feature_name_to_new_data_type:
+                    to_pad = [
+                        feature[key]
+                        .clone()
+                        .detach()
+                        .type(self.feature_name_to_new_data_type[key])
+                        for feature in features
+                    ]
+                else:
+                    to_pad = [feature[key].clone().detach() for feature in features]
                 batch[key] = pad_sequence(
-                    [feature[key].clone().detach() for feature in features],
+                    to_pad,
                     batch_first=True,
                     padding_value=value,
                 )
             elif self.padding_side == "left":
-                batch[key] = pad_sequence(
-                    [
+                if key in self.feature_name_to_new_data_type:
+                    to_pad = [
+                        feature[key]
+                        .clone()
+                        .detach()
+                        .flip(dims=[0])
+                        .type(self.feature_name_to_new_data_type[key])
+                        for feature in features
+                    ]
+                else:
+                    to_pad = [
                         feature[key].clone().detach().flip(dims=[0])
                         for feature in features
-                    ],
+                    ]
+                batch[key] = pad_sequence(
+                    to_pad,
                     batch_first=True,
                     padding_value=value,
                 ).flip(dims=[1])
@@ -376,9 +397,8 @@ class DataCollatorWithPadding:
                     batch[key] = torch.stack([feature[key] for feature in features])
                 else:
                     batch[key] = [feature[key] for feature in features]
-
-        for key, dtype in self.feature_name_to_new_data_type.items():
-            batch[key] = batch[key].to(dtype)
+                if key in self.feature_name_to_new_data_type:
+                    batch[key] = batch[key].to(self.feature_name_to_new_data_type[key])
 
         return batch
 

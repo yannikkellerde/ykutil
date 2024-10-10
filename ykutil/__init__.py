@@ -80,7 +80,7 @@ if find_spec("torch") is not None:
         if find_spec("transformer_heads") is not None and find_spec("peft") is not None:
             from .evaluation import (
                 EvaluateFirstStepCallback,
-                compute_head_metrics,
+                compute_classification_head_metrics,
                 compute_metric,
                 compute_metrics_functions,
             )
