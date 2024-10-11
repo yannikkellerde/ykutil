@@ -8,7 +8,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from ykutil.constants import IGNORE_INDEX
 
-
+@torch.inference_mode()
 def compute_policy_metrics(
     outputs: CausalLMOutputWithPast,
     input_dic: dict[str, torch.Tensor],
@@ -25,7 +25,7 @@ def compute_policy_metrics(
     ).item()
     return metrics
 
-
+@torch.inference_mode()
 def compute_classification_head_metrics(
     outputs: HeadedModelOutput,
     input_dic: dict[str, torch.Tensor],

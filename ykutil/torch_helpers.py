@@ -15,7 +15,7 @@ def rolling_window(a, size):
     return torch.as_strided(a, size=size, stride=strides)
 
 
-def find_all_subarray_poses(arr, subarr, end=False):
+def find_all_subarray_poses(arr, subarr, end=False) -> torch.Tensor:
     """
     >>> from torch import Tensor
     >>> find_all_subarray_poses(Tensor([1,2,3,4,5,1,2,3]), Tensor([1,2]))

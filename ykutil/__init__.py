@@ -9,7 +9,7 @@ from .data_model import (
     summed_stat_dc,
     undefaultdict,
 )
-from .logging import add_file_handler, log
+from .log_util import add_file_handler, log
 from .python import (
     all_equal,
     chunk_list,
@@ -42,8 +42,11 @@ from .python import (
 from .statistics import Statlogger, Welfords
 from .types import T, describe_type
 
+if find_spec("numpy") is not None:
+    from .numpy_util import describe_array
+
 if find_spec("pandera") is not None:
-    from .pandera import empty_dataframe_from_model
+    from .pandera_util import empty_dataframe_from_model
 
 if find_spec("openai") is not None and find_spec("pydantic") is not None:
     from .llm_api import AzureModelWrapper, ModelWrapper, human_readable_parse

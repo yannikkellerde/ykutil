@@ -365,6 +365,16 @@ def dict_without(d: dict[T, U], without: str | Iterable[T]) -> dict[T, U]:
     return new_d
 
 
+def all_sublist_matches(lst: list, sublst: list):
+    """
+    >>> list(all_sublist_matches([1, 2, 3, 4, 3, 2, 2, 3, 4], [2, 3]))
+    [1, 6]
+    """
+    for i in range(len(lst) - len(sublst) + 1):
+        if lst[i : i + len(sublst)] == sublst:
+            yield i
+
+
 if __name__ == "__main__":
     import doctest
 
