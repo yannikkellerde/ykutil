@@ -3,7 +3,7 @@ import gc
 import torch
 
 
-def rolling_window(a, size):
+def rolling_window(a: torch.Tensor, size: int) -> torch.Tensor:
     """
     >>> from torch import Tensor
     >>> rolling_window(Tensor([1,2,3]), 2)
@@ -15,7 +15,9 @@ def rolling_window(a, size):
     return torch.as_strided(a, size=size, stride=strides)
 
 
-def find_all_subarray_poses(arr, subarr, end=False) -> torch.Tensor:
+def find_all_subarray_poses(
+    arr: torch.Tensor, subarr: torch.Tensor, end=False
+) -> torch.Tensor:
     """
     >>> from torch import Tensor
     >>> find_all_subarray_poses(Tensor([1,2,3,4,5,1,2,3]), Tensor([1,2]))
@@ -31,7 +33,7 @@ def find_all_subarray_poses(arr, subarr, end=False) -> torch.Tensor:
     return poses
 
 
-def disable_gradients(model: torch.nn.Module):
+def disable_gradients(model: torch.nn.Module) -> torch.nn.Module:
     for param in model.parameters():
         param.requires_grad = False
     return model

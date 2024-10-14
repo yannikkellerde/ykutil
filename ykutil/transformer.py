@@ -339,48 +339,50 @@ class DataCollatorWithPadding:
         Returns:
             Dict[str, Any]: A dictionary mapping feature names to padded sequences.
         """
+        assert len(features) > 0, "features must not be empty."
         batch = dict()
         for key, value in self.feature_name_to_padding_value.items():
-            if self.padding_side == "right":
-                if key in self.feature_name_to_new_data_type:
-                    to_pad = [
-                        feature[key]
-                        .clone()
-                        .detach()
-                        .type(self.feature_name_to_new_data_type[key])
-                        for feature in features
-                    ]
+            if key in features[0]:
+                if self.padding_side == "right":
+                    if key in self.feature_name_to_new_data_type:
+                        to_pad = [
+                            feature[key]
+                            .clone()
+                            .detach()
+                            .type(self.feature_name_to_new_data_type[key])
+                            for feature in features
+                        ]
+                    else:
+                        to_pad = [feature[key].clone().detach() for feature in features]
+                    batch[key] = pad_sequence(
+                        to_pad,
+                        batch_first=True,
+                        padding_value=value,
+                    )
+                elif self.padding_side == "left":
+                    if key in self.feature_name_to_new_data_type:
+                        to_pad = [
+                            feature[key]
+                            .clone()
+                            .detach()
+                            .flip(dims=[0])
+                            .type(self.feature_name_to_new_data_type[key])
+                            for feature in features
+                        ]
+                    else:
+                        to_pad = [
+                            feature[key].clone().detach().flip(dims=[0])
+                            for feature in features
+                        ]
+                    batch[key] = pad_sequence(
+                        to_pad,
+                        batch_first=True,
+                        padding_value=value,
+                    ).flip(dims=[1])
                 else:
-                    to_pad = [feature[key].clone().detach() for feature in features]
-                batch[key] = pad_sequence(
-                    to_pad,
-                    batch_first=True,
-                    padding_value=value,
-                )
-            elif self.padding_side == "left":
-                if key in self.feature_name_to_new_data_type:
-                    to_pad = [
-                        feature[key]
-                        .clone()
-                        .detach()
-                        .flip(dims=[0])
-                        .type(self.feature_name_to_new_data_type[key])
-                        for feature in features
-                    ]
-                else:
-                    to_pad = [
-                        feature[key].clone().detach().flip(dims=[0])
-                        for feature in features
-                    ]
-                batch[key] = pad_sequence(
-                    to_pad,
-                    batch_first=True,
-                    padding_value=value,
-                ).flip(dims=[1])
-            else:
-                raise ValueError(
-                    f"padding_side must be either 'right' or 'left', but got {self.padding_side}."
-                )
+                    raise ValueError(
+                        f"padding_side must be either 'right' or 'left', but got {self.padding_side}."
+                    )
 
         for key in features[0].keys():
             if key not in self.feature_name_to_padding_value:
