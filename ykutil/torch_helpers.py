@@ -1,4 +1,5 @@
 import gc
+from typing import Optional
 
 import torch
 
@@ -16,7 +17,10 @@ def rolling_window(a: torch.Tensor, size: int) -> torch.Tensor:
 
 
 def find_all_subarray_poses(
-    arr: torch.Tensor, subarr: torch.Tensor, end=False
+    arr: torch.Tensor,
+    subarr: torch.Tensor,
+    end=False,
+    roll_window: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
     """
     >>> from torch import Tensor
@@ -25,9 +29,9 @@ def find_all_subarray_poses(
     """
     if len(subarr) > len(arr):
         return torch.tensor([], dtype=torch.int64)
-    poses = torch.nonzero(
-        torch.all(rolling_window(arr, len(subarr)) == subarr, dim=1)
-    ).squeeze(1)
+    if roll_window is None:
+        roll_window = rolling_window(arr, len(subarr))
+    poses = torch.nonzero(torch.all(roll_window == subarr, dim=1)).squeeze(1)
     if end and len(poses) > 0:
         poses += len(subarr)
     return poses

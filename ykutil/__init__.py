@@ -42,14 +42,19 @@ from .python import (
 from .statistics import Statlogger, Welfords
 from .types import T, describe_type
 
-if find_spec("numpy") is not None:
-    from .numpy_util import describe_array
+if find_spec("torch") is not None and find_spec("numpy") is not None:
+    from .print_tools import describe_array, describe_list
 
 if find_spec("pandera") is not None:
     from .pandera_util import empty_dataframe_from_model
 
 if find_spec("openai") is not None and find_spec("pydantic") is not None:
-    from .llm_api import AzureModelWrapper, ModelWrapper, human_readable_parse
+    from .llm_api import (
+        AzureModelWrapper,
+        ModelWrapper,
+        human_readable_parse,
+        local_image_to_data_url,
+    )
 
 if find_spec("datasets") is not None:
     from .dataset import colorcode_dataset, colorcode_entry, describe_dataset
@@ -95,6 +100,7 @@ if find_spec("torch") is not None:
                 dict_from_chat_template,
                 find_tokens_with_str,
                 flat_encode,
+                generate_different_sequences,
                 load_maybe_peft_model_tokenizer,
                 load_tk_with_pad_tk,
                 obtain_offsets,

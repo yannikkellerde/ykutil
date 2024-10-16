@@ -3,6 +3,7 @@ import itertools
 import json
 import os
 import re
+from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import lru_cache
 from operator import itemgetter
@@ -22,12 +23,42 @@ from transformers import (
     AutoTokenizer,
     BatchEncoding,
     BitsAndBytesConfig,
+    GenerationConfig,
     PreTrainedModel,
     PreTrainedTokenizer,
     StoppingCriteria,
 )
+from transformers.generation.utils import GenerateOutput
 
 from ykutil.python import list_squeeze
+
+
+def generate_different_sequences(
+    model: PreTrainedModel,
+    context: torch.Tensor,
+    sequence_bias_add: int,
+    sequence_bias_decay: float,
+    generation_args: GenerationConfig,
+    num_generations: int,
+):
+    gen_sequences = []
+    sequence_bias = defaultdict(float)
+    for _ in range(num_generations):
+        gen = model.generate(
+            context.unsqueeze(0),
+            generation_config=generation_args,
+            sequence_bias=sequence_bias or None,
+        )
+        if isinstance(gen, GenerateOutput):
+            gen = gen.sequences
+        gen = gen[0][context.shape[0] :]
+        gen_sequences.append(gen)
+        for key in sequence_bias:
+            sequence_bias[key] *= sequence_bias_decay
+        if sequence_bias_add != 0:
+            for tok in gen:
+                sequence_bias[tok.item()] += sequence_bias_add
+    return gen_sequences
 
 
 @lru_cache()

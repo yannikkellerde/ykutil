@@ -8,6 +8,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from ykutil.constants import IGNORE_INDEX
 
+
 @torch.inference_mode()
 def compute_policy_metrics(
     outputs: CausalLMOutputWithPast,
@@ -24,6 +25,7 @@ def compute_policy_metrics(
         torch.sum(distrib * torch.log(distrib), dim=-1)
     ).item()
     return metrics
+
 
 @torch.inference_mode()
 def compute_classification_head_metrics(
