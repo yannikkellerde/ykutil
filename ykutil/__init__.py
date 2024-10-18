@@ -10,6 +10,7 @@ from .data_model import (
     undefaultdict,
 )
 from .log_util import add_file_handler, log
+from .multiprocess import apply_args_and_kwargs, run_in_parallel, starmap_with_kwargs
 from .python import (
     all_equal,
     chunk_list,
@@ -37,6 +38,7 @@ from .python import (
     split_multi,
     str_find_all,
     transpose_li_of_dict,
+    unique_n_times,
     update_running_avg,
 )
 from .statistics import Statlogger, Welfords

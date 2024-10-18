@@ -1,6 +1,6 @@
 import re
 from itertools import groupby
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Optional
 
 from tqdm import tqdm
 
@@ -373,6 +373,30 @@ def all_sublist_matches(lst: list, sublst: list):
     for i in range(len(lst) - len(sublst) + 1):
         if lst[i : i + len(sublst)] == sublst:
             yield i
+
+
+def unique_n_times(
+    lst: list, n: int, invalid_filter: set = set(), verbose=False
+) -> list[int]:
+    """
+    Returns the indices of the first n times each unique element appears in the list
+
+    >>> unique_n_times([0,2,1,2,2,1,0,0,1,2], 2)
+    [0, 1, 2, 3, 5, 6]
+    """
+    seen = {}
+    result = []
+    for i, x in tqdm(
+        enumerate(lst), total=len(lst), disable=not verbose, desc="unique_n_times"
+    ):
+        if i not in invalid_filter:
+            if x in seen:
+                seen[x] += 1
+            else:
+                seen[x] = 1
+            if seen[x] <= n:
+                result.append(i)
+    return result
 
 
 if __name__ == "__main__":
