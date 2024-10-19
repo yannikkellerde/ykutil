@@ -41,16 +41,20 @@ def get_dropped_card(pres_hand: list[str], chancellor_hand: list[str]) -> str:
     return cp[0]
 
 
-def list_split(li: list, max_len: int) -> list[list]:
+def list_split(li: list, max_len: int, min_len: Optional[int] = None) -> list[list]:
     """
     >>> list_split([1, 2, 3, 4, 5, 1, 2, 3], 3)
     [[1, 2, 3], [4, 5, 1], [2, 3]]
     """
-    return [li[i : i + max_len] for i in range(0, len(li), max_len)]
+    return [
+        li[i : i + max_len]
+        for i in range(0, len(li), max_len)
+        if min_len is None or len(li[i : i + max_len]) >= min_len
+    ]
 
 
 def split_multi(
-    lists: list[list], max_len: int, progress=False
+    lists: list[list], max_len: int, progress=False, min_len: Optional[int] = None
 ) -> tuple[list[list], list]:
     """
     Slow for large lists
@@ -58,7 +62,7 @@ def split_multi(
     ([[1, 2], [3, 4], [1, 2], [3, 4], [5, 6], [7]], [0, 0, 1, 2, 2, 2])
     """
     splits = [
-        list_split(x, max_len)
+        list_split(x, max_len, min_len=min_len)
         for x in tqdm(lists, disable=not progress, desc="performing list splits")
     ]
     return sum(splits, []), sum(
@@ -376,26 +380,40 @@ def all_sublist_matches(lst: list, sublst: list):
 
 
 def unique_n_times(
-    lst: list, n: int, invalid_filter: set = set(), verbose=False
+    lst: list,
+    n: int,
+    invalid_filter: set = set(),
+    verbose=False,
+    comboer: Optional[list] = None,
 ) -> list[int]:
     """
     Returns the indices of the first n times each unique element appears in the list
+    If a comboer is given, all indices with the same unique element and comboer are treated as the same element
 
     >>> unique_n_times([0,2,1,2,2,1,0,0,1,2], 2)
     [0, 1, 2, 3, 5, 6]
+    >>> unique_n_times([0,2,1,2,2,1,0,0,1,2], 2, comboer=[5,8,4,9,10,5,5,6,6,8])
+    [0, 1, 2, 3, 5, 6, 7, 9]
     """
     seen = {}
     result = []
+    combos = set()
     for i, x in tqdm(
         enumerate(lst), total=len(lst), disable=not verbose, desc="unique_n_times"
     ):
         if i not in invalid_filter:
+            if comboer is not None:
+                if (x, comboer[i]) in combos:
+                    result.append(i)
+                    continue
             if x in seen:
                 seen[x] += 1
             else:
                 seen[x] = 1
             if seen[x] <= n:
                 result.append(i)
+                if comboer is not None:
+                    combos.add((x, comboer[i]))
     return result
 
 
