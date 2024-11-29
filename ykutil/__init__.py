@@ -117,4 +117,4 @@ if find_spec("torch") is not None:
             from .transformer_heads_util import compute_seq_log_probability
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"

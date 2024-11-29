@@ -11,7 +11,7 @@ requires-python = ">= 3.10"
 authors = [
   {name = "Yannik Keller", email = "yannik@kelnet.de"},
 ]
-description = "These are my utilities. Hands off! (Or not, feel free to use)"
+description = "A continuously updates repository of utility functions."
 readme = "README.md"
 license = {text = "MIT License"}
 keywords = ["util"]
