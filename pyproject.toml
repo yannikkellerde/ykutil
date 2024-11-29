@@ -16,7 +16,7 @@ readme = "README.md"
 license = {text = "MIT License"}
 keywords = ["util"]
 [project.optional-dependencies]
-all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "accelerate", "openai"]
+all = ["torch", "transformer_heads", "transformers", "peft", "bitsandbytes", "accelerate", "openai", "pandera", "datasets"]
 [tool.hatch.version]
 path = "ykutil/__init__.py"
 [project.scripts]
@@ -24,3 +24,5 @@ describe_dataset = "ykutil.executable:do_describe_dataset"
 tokenize = "ykutil.executable:do_tokenize"
 untokenize = "ykutil.executable:do_untokenize"
 colorcode_ds = "ykutil.executable:do_colorcode_dataset"
+beautify_json = "ykutil.executable:do_beautify_json"
+bulk_rename = "ykutil.executable:do_bulk_rename"

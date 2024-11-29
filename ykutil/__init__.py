@@ -42,7 +42,8 @@ from .python import (
     update_running_avg,
 )
 from .statistics import Statlogger, Welfords
-from .types import T, describe_type
+from .tools import bulk_rename
+from .types_util import T, describe_type
 
 if find_spec("torch") is not None and find_spec("numpy") is not None:
     from .print_tools import describe_array, describe_list
@@ -58,9 +59,6 @@ if find_spec("openai") is not None and find_spec("pydantic") is not None:
         local_image_to_data_url,
     )
 
-if find_spec("datasets") is not None:
-    from .dataset import colorcode_dataset, colorcode_entry, describe_dataset
-
 if find_spec("dacite") is not None and find_spec("yaml") is not None:
     from .configuration import from_file
 
@@ -69,6 +67,7 @@ if find_spec("torch") is not None:
         disable_gradients,
         find_all_subarray_poses,
         free_cuda_memory,
+        pad_along_dimension,
         print_memory_info,
         rolling_window,
         tensor_in,
@@ -86,31 +85,36 @@ if find_spec("torch") is not None:
             smart_tokenizer_and_embedding_resize,
         )
         from .training import train_eval_and_get_metrics
+        from .transformer import (
+            DataCollatorWithPadding,
+            TokenStoppingCriteria,
+            batch_tokenization,
+            dict_from_chat_template,
+            find_tokens_with_str,
+            flat_encode,
+            generate_different_sequences,
+            load_tk_with_pad_tk,
+            obtain_offsets,
+            regex_tokens_using_offsets,
+            tokenize,
+            tokenize_instances,
+            transform_with_offsets,
+            untokenize,
+        )
 
-        if find_spec("transformer_heads") is not None and find_spec("peft") is not None:
+        if find_spec("datasets") is not None:
+            from .dataset import colorcode_dataset, colorcode_entry, describe_dataset
+
+        if find_spec("transformer_heads") is not None:
+            if find_spec("peft") is not None:
+                from .peft_util import load_maybe_peft_model_tokenizer
             from .evaluation import (
                 EvaluateFirstStepCallback,
                 compute_classification_head_metrics,
                 compute_metric,
                 compute_metrics_functions,
             )
-            from .transformer import (
-                DataCollatorWithPadding,
-                TokenStoppingCriteria,
-                batch_tokenization,
-                compute_seq_log_probability,
-                dict_from_chat_template,
-                find_tokens_with_str,
-                flat_encode,
-                generate_different_sequences,
-                load_maybe_peft_model_tokenizer,
-                load_tk_with_pad_tk,
-                obtain_offsets,
-                regex_tokens_using_offsets,
-                tokenize,
-                tokenize_instances,
-                transform_with_offsets,
-                untokenize,
-            )
+            from .transformer_heads_util import compute_seq_log_probability
+
 
 __version__ = "0.0.2"

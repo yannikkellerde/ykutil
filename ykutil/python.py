@@ -1,10 +1,12 @@
+import functools
+import random
 import re
 from itertools import groupby
 from typing import Any, Iterable, List, Optional
 
 from tqdm import tqdm
 
-from ykutil.types import T, U
+from ykutil.types_util import T, U
 
 
 def identity(x):
@@ -349,8 +351,8 @@ def removesuffixes(lst: list[T], suffix: Iterable[T]) -> list[T]:
     >>> removesuffixes([1, 2, 3, 4, 3], [3,2])
     [1, 2, 3, 4]
     """
-    while len(lst) > 0 and any(lst[-1] == s for s in suffix):
-        lst = lst[:-1]
+    while len(lst) > 0 and lst[-1] in suffix:
+        lst.pop()
     return lst
 
 
@@ -385,6 +387,7 @@ def unique_n_times(
     invalid_filter: set = set(),
     verbose=False,
     comboer: Optional[list] = None,
+    shuffle: bool = False,
 ) -> list[int]:
     """
     Returns the indices of the first n times each unique element appears in the list
@@ -395,6 +398,15 @@ def unique_n_times(
     >>> unique_n_times([0,2,1,2,2,1,0,0,1,2], 2, comboer=[5,8,4,9,10,5,5,6,6,8])
     [0, 1, 2, 3, 5, 6, 7, 9]
     """
+    if shuffle:
+        if comboer is not None:
+            lst_and_comboer = list(zip(lst, comboer))
+            random.shuffle(lst_and_comboer)
+            lst, comboer = zip(*lst_and_comboer)
+        else:
+            lst = lst.copy()
+            random.shuffle(lst)
+
     seen = {}
     result = []
     combos = set()

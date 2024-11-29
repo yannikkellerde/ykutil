@@ -1,8 +1,19 @@
 import argparse
+import json
 from ast import literal_eval
+
+from fire import Fire
 
 from ykutil.dataset import colorcode_entry
 from ykutil.dataset import describe_dataset as ds_describe_dataset
+from ykutil.tools import bulk_rename
+
+
+def do_bulk_rename():
+    Fire(bulk_rename)
+
+def beautify_json(json_str: str):
+    print(json.dumps(json.loads(json_str), indent=4))
 
 
 def describe_dataset(
@@ -76,3 +87,10 @@ def do_colorcode_dataset():
         num_end=args.end,
         beautify=not args.ugly,
     )
+
+
+def do_beautify_json():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("json_str", type=str)
+    args = parser.parse_args()
+    return beautify_json(json_str=args.json_str)

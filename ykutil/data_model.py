@@ -4,7 +4,7 @@ from dataclasses import asdict, is_dataclass
 from typing import Callable
 
 from ykutil.python import recursed_merge_percent_stats, recursed_sum_up_stats
-from ykutil.types import T
+from ykutil.types_util import T
 
 
 def summed_stat_dc(

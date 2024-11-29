@@ -4,7 +4,7 @@ from typing import Type
 import yaml
 from dacite import from_dict
 
-from ykutil.types import T
+from ykutil.types_util import T
 
 
 def from_file(cls: Type[T], config_file: str, **argmod) -> T:

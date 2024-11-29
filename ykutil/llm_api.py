@@ -8,7 +8,7 @@ from openai import AzureOpenAI
 from openai._base_client import BaseClient
 from pydantic import BaseModel
 
-from ykutil import T
+from ykutil.types_util import T
 
 
 # Source: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/gpt-with-vision?tabs=rest

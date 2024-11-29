@@ -2,6 +2,7 @@ import gc
 from typing import Optional
 
 import torch
+import torch.nn.functional as F
 
 
 def rolling_window(a: torch.Tensor, size: int) -> torch.Tensor:
@@ -71,6 +72,37 @@ def print_memory_info():
 def free_cuda_memory():
     gc.collect()
     torch.cuda.empty_cache()
+
+
+def pad_along_dimension(tensors, dim, pad_value=0):
+    """
+
+    Pads a list of tensors along a specified dimension so they can be stacked.
+
+    Args:
+        tensors (list of torch.Tensor): List of tensors to pad.
+        dim (int): The dimension along which to pad.
+
+    Returns:
+        torch.Tensor: A single stacked tensor with all inputs padded along the specified dimension.
+
+    >>> pad_along_dimension([torch.randn(4,12), torch.randn(4,20), torch.randn(4,5)], dim=1).shape
+    torch.Size([3, 4, 20])
+    """
+    # Determine the target size for the specified dimension
+    max_size = max(t.size(dim) for t in tensors)
+
+    # Create a function to apply padding to the tensor
+    padded_tensors = []
+    for t in tensors:
+        pad_sizes = [0] * t.dim()  # Create a list of zeros for all dimensions
+        pad_sizes[dim] = max_size - t.size(
+            dim
+        )  # Set the padding for the specified dimension
+        padded_tensors.append(F.pad(t, pad_sizes, value=pad_value))
+
+    # Stack the padded tensors
+    return torch.stack(padded_tensors)
 
 
 if __name__ == "__main__":
