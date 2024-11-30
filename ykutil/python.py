@@ -2,11 +2,11 @@ import functools
 import random
 import re
 from itertools import groupby
-from typing import Any, Iterable, List, Optional
+from typing import Any, Generator, Iterable, List, Optional
 
 from tqdm import tqdm
 
-from ykutil.types_util import T, U
+from ykutil.types_util import SimpleGenerator, T, U
 
 
 def identity(x):
@@ -153,7 +153,7 @@ def naive_regex_escape(some_str: str) -> str:
     return some_str
 
 
-def chunk_list(lst, n):
+def chunk_list(lst, n) -> SimpleGenerator[list]:
     """Returns a generator that yields consecutive chunks of size n from lst.
     Works with huggingface datasets as well
     """
@@ -172,6 +172,30 @@ def list_flip(lst: list[int | float]) -> list[int | float]:
     mn = min(lst)
     new_lst = [mx + mn - x for x in lst]
     return new_lst
+
+
+def approx_number_split(n: int, n_splits: int) -> list[int]:
+    """
+    >>> approx_number_split(10, 3)
+    [4, 3, 3]
+    """
+    out = [n // n_splits] * n_splits
+    for i in range(n % n_splits):
+        out[i] += 1
+    return out
+
+
+def approx_list_split(lst: list, n_splits: int) -> SimpleGenerator[list]:
+    """
+    >>> list(approx_list_split([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3))
+    [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    """
+    splits = approx_number_split(len(lst), n_splits)
+
+    start = 0
+    for sp in splits:
+        yield lst[start : start + sp]
+        start += sp
 
 
 def nth_index(lst: list, value, n: int) -> int:

@@ -86,8 +86,12 @@ def pad_along_dimension(tensors, dim, pad_value=0):
     Returns:
         torch.Tensor: A single stacked tensor with all inputs padded along the specified dimension.
 
-    >>> pad_along_dimension([torch.randn(4,12), torch.randn(4,20), torch.randn(4,5)], dim=1).shape
-    torch.Size([3, 4, 20])
+    >>> pad_along_dimension([torch.randn(4,12), torch.randn(4,21), torch.randn(4,5)], dim=1).shape
+    torch.Size([3, 4, 21])
+    >>> pad_along_dimension([torch.randn(4,12,3), torch.randn(4,21,3), torch.randn(4,5,3)], dim=1).shape
+    torch.Size([3, 4, 21, 3])
+    >>> pad_along_dimension([torch.randn(12), torch.randn(21), torch.randn(5)], dim=0).shape
+    torch.Size([3, 21])
     """
     # Determine the target size for the specified dimension
     max_size = max(t.size(dim) for t in tensors)
@@ -95,8 +99,8 @@ def pad_along_dimension(tensors, dim, pad_value=0):
     # Create a function to apply padding to the tensor
     padded_tensors = []
     for t in tensors:
-        pad_sizes = [0] * t.dim()  # Create a list of zeros for all dimensions
-        pad_sizes[dim] = max_size - t.size(
+        pad_sizes = [0] * t.dim() * 2  # Create a list of zeros for all dimensions
+        pad_sizes[len(pad_sizes) - 1 - dim * 2] = max_size - t.size(
             dim
         )  # Set the padding for the specified dimension
         padded_tensors.append(F.pad(t, pad_sizes, value=pad_value))
@@ -106,6 +110,8 @@ def pad_along_dimension(tensors, dim, pad_value=0):
 
 
 if __name__ == "__main__":
+    # pad_along_dimension([torch.randn(4, 12), torch.randn(4, 21), torch.randn(4, 5)], 1)
+    # pad_along_dimension([torch.randn(12), torch.randn(21), torch.randn(5)], 0)
     import doctest
 
     doctest.testmod()

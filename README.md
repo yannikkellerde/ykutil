@@ -14,6 +14,10 @@ Here is an overview of what utilities are implemented at this point.
 - `chunk_list(lst, n)`: Yield consecutive chunks of size `n` from `lst`.
 - `flatten(li)`: Flatten a list of lists.
 - `unique_n_times(lst, n, invalid_filter=set(), verbose=False, comboer=None, shuffle=False)`: Get indices of the first `n` occurrences of each unique element in `lst`.
+- `make_list_unique(seq)`: Remove duplicates from list.
+- `all_sublist_matches(lst, sublst)`: Find all sublist matches.
+- `removesuffixes(lst, suffix)`: Remove suffixes from a list.
+- `approx_list_split(lst, n_splits)`: Split a list in n_splits parts of about equal length.
 
 ### String Utilities
 - `multify_text(text, roles)`: Format text with multiple roles.
@@ -38,9 +42,7 @@ Here is an overview of what utilities are implemented at this point.
 - `nth_index(lst, value, n)`: Find the nth occurrence of a value in a list.
 - `update_running_avg(old_avg, old_weight, new_avg, new_weight=1)`: Update a running average.
 - `all_equal(iterable, force_value=None)`: Check if all elements in an iterable are equal.
-- `make_list_unique(seq)`: Make a list unique.
-- `all_sublist_matches(lst, sublst)`: Find all sublist matches.
-- `removesuffixes(lst, suffix)`: Remove suffixes from a list.
+- `approx_number_split(n, n_splits)`: Split a number into a list of close integers that sum ut to the number.
 
 ## Huggingface datasets utilities
 

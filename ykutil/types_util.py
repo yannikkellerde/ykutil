@@ -1,7 +1,9 @@
-from typing import TypeVar
+from typing import Generator, TypeVar
 
 T = TypeVar("T")
 U = TypeVar("U")
+
+SimpleGenerator = Generator[T, None, None]
 
 
 def describe_type(t: object) -> str:
