@@ -1,6 +1,10 @@
 # A vast range of python utils
 This continuously updates with more utils that I add. 
 
+## Installation
++ `pip install ykutil`
++ Or clone this repo and `pip install -e .`
+
 # Overview of all implemented utilities
 Here is an overview of what utilities are implemented at this point.
 ## Basic python tools
