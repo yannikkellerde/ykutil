@@ -19,8 +19,6 @@ from .python import (
     dict_percentages,
     dict_without,
     flatten,
-    get_dropped_card,
-    hand_to_letter_form,
     identity,
     index_of_sublist_match,
     list_flip,

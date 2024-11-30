@@ -40,8 +40,6 @@ Here is an overview of what utilities are implemented at this point.
 
 ### General Utilities
 - `identity(x)`: Return `x`.
-- `hand_to_letter_form(hand)`: Convert hand to letter form.
-- `get_dropped_card(pres_hand, chancellor_hand)`: Get the dropped card from hands.
 - `index_of_sublist_match(haystack, needle)`: Find the index of a sublist match.
 - `nth_index(lst, value, n)`: Find the nth occurrence of a value in a list.
 - `update_running_avg(old_avg, old_weight, new_avg, new_weight=1)`: Update a running average.

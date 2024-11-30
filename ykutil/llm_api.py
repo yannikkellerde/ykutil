@@ -6,7 +6,6 @@ from typing import Optional, Type
 
 from openai import AzureOpenAI
 from openai._base_client import BaseClient
-from pydantic import BaseModel
 
 from ykutil.types_util import T
 

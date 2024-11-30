@@ -1,8 +1,7 @@
-import functools
 import random
 import re
 from itertools import groupby
-from typing import Any, Generator, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 from tqdm import tqdm
 
@@ -22,25 +21,6 @@ def list_rindex(li, x):
         if li[i] == x:
             return i
     raise ValueError(f"{x} is not in list")
-
-
-def hand_to_letter_form(hand):
-    """
-    >>> hand_to_letter_form(["fascist", "liberal", "fascist"])
-    ['R', 'B', 'R']
-    """
-    return ["R" if x == "fascist" else "B" for x in hand]
-
-
-def get_dropped_card(pres_hand: list[str], chancellor_hand: list[str]) -> str:
-    """
-    >>> get_dropped_card(["fascist", "liberal", "fascist"], ["fascist", "fascist"])
-    'liberal'
-    """
-    cp = pres_hand.copy()
-    for el in chancellor_hand:
-        cp.remove(el)
-    return cp[0]
 
 
 def list_split(li: list, max_len: int, min_len: Optional[int] = None) -> list[list]:
