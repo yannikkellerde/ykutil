@@ -45,6 +45,7 @@ Here is an overview of what utilities are implemented at this point.
 - `update_running_avg(old_avg, old_weight, new_avg, new_weight=1)`: Update a running average.
 - `all_equal(iterable, force_value=None)`: Check if all elements in an iterable are equal.
 - `approx_number_split(n, n_splits)`: Split a number into a list of close integers that sum ut to the number.
+- `anyin(haystack, needles)`: Predicate to check if any element from needles is in haystack
 
 ## Huggingface datasets utilities
 

@@ -13,6 +13,7 @@ from .log_util import add_file_handler, log
 from .multiproc import apply_args_and_kwargs, run_in_parallel, starmap_with_kwargs
 from .python import (
     all_equal,
+    anyin,
     approx_list_split,
     approx_number_split,
     chunk_list,

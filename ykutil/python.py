@@ -77,6 +77,14 @@ def index_of_sublist_match(haystack: List[list], needle: list) -> int:
     return [x[: len(needle)] for x in haystack].index(needle)
 
 
+def anyin(needles: Iterable, haystack: Iterable) -> bool:
+    """
+    >>> anyin([1, 2, 3], [3, 4, 5])
+    True
+    """
+    return any(x in haystack for x in needles)
+
+
 def list_squeeze(l: list) -> list:
     """
     >>> list_squeeze([[1], [2], [3], [[3, 4, 5]]])
