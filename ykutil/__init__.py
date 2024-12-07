@@ -90,6 +90,7 @@ if find_spec("torch") is not None:
             DataCollatorWithPadding,
             TokenStoppingCriteria,
             batch_tokenization,
+            compute_seq_log_probability,
             dict_from_chat_template,
             find_tokens_with_str,
             flat_encode,
@@ -115,7 +116,5 @@ if find_spec("torch") is not None:
                 compute_metric,
                 compute_metrics_functions,
             )
-            from .transformer_heads_util import compute_seq_log_probability
-
 
 __version__ = "0.0.4"

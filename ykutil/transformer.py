@@ -23,6 +23,13 @@ from transformers.generation.utils import GenerateOutput
 
 from ykutil.python import list_squeeze
 
+try:
+    from transformer_heads.output import HeadedModelOutput
+
+    th_available = True
+except ImportError:
+    th_available = False
+
 
 def generate_different_sequences(
     model: PreTrainedModel,
@@ -383,6 +390,35 @@ def tokenize(tk_name: str, text: str):
 def untokenize(tk_name: str, tokens: List[int]):
     tk = AutoTokenizer.from_pretrained(tk_name)
     return tk.decode(tokens)
+
+
+@torch.inference_mode()
+def compute_seq_log_probability(
+    model: PreTrainedModel,
+    pre_seq_tokens: list[int],
+    post_seq_tokens: list[int],
+) -> float:
+    inputs = torch.tensor(
+        pre_seq_tokens + post_seq_tokens, device=model.device
+    ).unsqueeze(0)
+
+    output = model(inputs)
+    if th_available and isinstance(output, HeadedModelOutput):
+        logits = output.preds_by_head["lm_head"][
+            0, -len(post_seq_tokens) - 1 : -1
+        ].cpu()
+    else:
+        logits = output.logits[0, -len(post_seq_tokens) - 1 : -1].cpu()
+
+    logprobs = log_softmax(logits, dim=-1)
+
+    res = float(
+        torch.sum(
+            logprobs.gather(1, torch.tensor(post_seq_tokens).unsqueeze(1)).squeeze()
+        )
+    )
+
+    return res
 
 
 if __name__ == "__main__":
