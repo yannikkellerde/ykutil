@@ -1,4 +1,5 @@
 import gc
+import io
 from typing import Optional
 
 import torch
@@ -107,6 +108,17 @@ def pad_along_dimension(tensors, dim, pad_value=0):
 
     # Stack the padded tensors
     return torch.stack(padded_tensors)
+
+
+def serialize_tensor(t: torch.Tensor) -> bytes:
+    buffer = io.BytesIO()
+    torch.save(t, buffer)
+    return buffer.getvalue()
+
+
+def deserialize_tensor(b: bytes) -> torch.Tensor:
+    buffer = io.BytesIO(b)
+    return torch.load(buffer)
 
 
 if __name__ == "__main__":

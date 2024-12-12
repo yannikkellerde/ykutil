@@ -65,12 +65,14 @@ if find_spec("dacite") is not None and find_spec("yaml") is not None:
 
 if find_spec("torch") is not None:
     from .torch_helpers import (
+        deserialize_tensor,
         disable_gradients,
         find_all_subarray_poses,
         free_cuda_memory,
         pad_along_dimension,
         print_memory_info,
         rolling_window,
+        serialize_tensor,
         tensor_in,
     )
 

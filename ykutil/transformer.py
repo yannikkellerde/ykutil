@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import torch
 from tokenizers import Encoding
+from torch.nn.functional import log_softmax
 from torch.nn.utils.rnn import pad_sequence
 from tqdm import trange
 from transformers import (
