@@ -116,9 +116,9 @@ def serialize_tensor(t: torch.Tensor) -> bytes:
     return buffer.getvalue()
 
 
-def deserialize_tensor(b: bytes) -> torch.Tensor:
+def deserialize_tensor(b: bytes, map_location=None) -> torch.Tensor:
     buffer = io.BytesIO(b)
-    return torch.load(buffer)
+    return torch.load(buffer, map_location=map_location)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import random
 import re
+from collections import defaultdict, deque
 from itertools import groupby
 from typing import Any, Iterable, List, Optional
 
@@ -33,6 +34,89 @@ def list_split(li: list, max_len: int, min_len: Optional[int] = None) -> list[li
         for i in range(0, len(li), max_len)
         if min_len is None or len(li[i : i + max_len]) >= min_len
     ]
+
+
+def list_split_at_value(li: list, value: Any) -> list[list]:
+    """
+    >>> list_split_at_value([1, 2, 3, 4, 5, 1, 2, 3], 1)
+    [[], [2, 3, 4, 5], [2, 3]]
+    """
+    splits = []
+    start = 0
+    for i, x in enumerate(li):
+        if x == value:
+            splits.append(li[start:i])
+            start = i + 1
+    splits.append(li[start:])
+    return splits
+
+
+def shortest_common_supersequence(lists: list[list]) -> list:
+    """Find the shortest common supersequence that contains
+    the given lists as subsequences. All elements appear in
+    an order that respects the relative orderings of each list.
+
+
+    >>> shortest_common_supersequence([[1,7,2,3], [1,2,8,9,3], [5,1,2,3,6]])
+    [5, 1, 7, 2, 8, 9, 3, 6]
+    >>> shortest_common_supersequence([[1,2,3,3,2,1], [2,3,3,4,2,1]])
+    [1, 2, 3, 3, 4, 2, 1]
+    """
+    # Credits to o1
+
+    # If there's only one list, that list itself is the shortest common supersequence.
+    if len(lists) == 1:
+        return lists[0]
+
+    def scs_two(a: list, b: list) -> list:
+        # Compute the shortest common supersequence of two lists a and b.
+
+        # First, compute the LCS (Longest Common Subsequence) DP table.
+        len_a, len_b = len(a), len(b)
+        dp = [[0] * (len_b + 1) for _ in range(len_a + 1)]
+
+        for i in range(1, len_a + 1):
+            for j in range(1, len_b + 1):
+                if a[i - 1] == b[j - 1]:
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                else:
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+
+        # Reconstruct the shortest common supersequence from the DP table.
+        i, j = len_a, len_b
+        scs = []
+        while i > 0 and j > 0:
+            if a[i - 1] == b[j - 1]:
+                # If elements are equal, it must be in the SCS.
+                scs.append(a[i - 1])
+                i -= 1
+                j -= 1
+            else:
+                # Pick the direction which gives us the longer LCS and add that element.
+                if dp[i - 1][j] > dp[i][j - 1]:
+                    scs.append(a[i - 1])
+                    i -= 1
+                else:
+                    scs.append(b[j - 1])
+                    j -= 1
+
+        # If any elements are left in a or b, append them.
+        while i > 0:
+            scs.append(a[i - 1])
+            i -= 1
+        while j > 0:
+            scs.append(b[j - 1])
+            j -= 1
+
+        scs.reverse()
+        return scs
+
+    # Iteratively combine all lists into a single shortest common supersequence.
+    current_scs = lists[0]
+    for i in range(1, len(lists)):
+        current_scs = scs_two(current_scs, lists[i])
+
+    return current_scs
 
 
 def split_multi(
@@ -184,6 +268,61 @@ def approx_list_split(lst: list, n_splits: int) -> SimpleGenerator[list]:
     for sp in splits:
         yield lst[start : start + sp]
         start += sp
+
+
+def list_find_new(list_orig: list, list_new: list) -> list:
+    """list_new contains more content at the end than list_orig
+    but is also missing some parts of list_orig. This function
+    will find the new content in list_new and return it.
+
+    >>> list_find_new([1, 2, 3, 4], [1, 3, 4, 5, 6])
+    [5, 6]
+    """
+    # Credits to o1
+    last_match_index = -1  # position of the last matched element in list_new
+    for elem in list_orig:
+        # Find elem in list_new starting from last_match_index+1
+        try:
+            pos = list_new.index(elem, last_match_index + 1)
+            last_match_index = pos
+        except ValueError:
+            # elem is not found in list_new after last_match_index, skip it
+            continue
+
+    # Everything after last_match_index in list_new is new
+    new_part = list_new[last_match_index + 1 :]
+    return new_part
+
+
+def check_if_in_other_list(lst: list, other: list) -> list[bool]:
+    """other may be shorter than lst and may be missing parts of
+    lst inbetween. This function will find all overlaps between
+    the two lists and return a list of booleans indicating which
+    parts of lst are in other.
+
+    The logic is that `other` should be considered as a subsequence
+    to be matched in order. We iterate through `lst` and try to match
+    elements of `other` in sequence. When we find a match, we move on
+    to the next element of `other`. If there's no match, we mark False.
+
+    >>> check_if_in_other_list([1, 6, 3, 4, 5, 6], [1, 3, 4, 6])
+    [True, False, True, True, False, True]
+    """
+    # Credits to o1
+    result = []
+    other_idx = 0
+    other_len = len(other)
+
+    for elem in lst:
+        if other_idx < other_len and elem == other[other_idx]:
+            # Matches the next required element in 'other'
+            result.append(True)
+            other_idx += 1
+        else:
+            # Does not match the next required element
+            result.append(False)
+
+    return result
 
 
 def nth_index(lst: list, value, n: int) -> int:
@@ -391,6 +530,17 @@ def all_sublist_matches(lst: list, sublst: list):
     for i in range(len(lst) - len(sublst) + 1):
         if lst[i : i + len(sublst)] == sublst:
             yield i
+
+
+def list_in_list(lst: list, sublst: list) -> bool:
+    """
+    >>> list_in_list([1, 2, 3, 4, 3, 2, 2, 3, 4], [2, 3])
+    True
+    """
+    for i in range(len(lst) - len(sublst) + 1):
+        if lst[i : i + len(sublst)] == sublst:
+            return True
+    return False
 
 
 def unique_n_times(
