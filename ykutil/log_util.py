@@ -2,11 +2,12 @@ import inspect
 import logging
 import os
 
-logger = logging.getLogger("log_util")
-logger.setLevel(logging.INFO)
-hl = logging.StreamHandler()
-hl.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
-logger.addHandler(hl)
+if not "log_util" in logging.Logger.manager.loggerDict:
+    logger = logging.getLogger("log_util")
+    logger.setLevel(logging.INFO)
+    hl = logging.StreamHandler()
+    hl.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
+    logger.addHandler(hl)
 
 level_map = {
     "WARN": logging.WARNING,

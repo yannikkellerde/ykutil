@@ -396,12 +396,20 @@ def untokenize(tk_name: str, tokens: List[int]):
 @torch.inference_mode()
 def compute_seq_log_probability(
     model: PreTrainedModel,
-    pre_seq_tokens: list[int],
-    post_seq_tokens: list[int],
+    pre_seq_tokens: list[int] | torch.Tensor,
+    post_seq_tokens: list[int] | torch.Tensor,
+    reduction: str = "sum",
 ) -> float:
-    inputs = torch.tensor(
-        pre_seq_tokens + post_seq_tokens, device=model.device
-    ).unsqueeze(0)
+    if isinstance(pre_seq_tokens, list):
+        inputs = torch.tensor(
+            pre_seq_tokens + post_seq_tokens, device=model.device
+        ).unsqueeze(0)
+    else:
+        inputs = (
+            torch.cat([pre_seq_tokens.view(-1), post_seq_tokens.view(-1)], dim=0)
+            .unsqueeze(0)
+            .to(model.device)
+        )
 
     output = model(inputs)
     if th_available and isinstance(output, HeadedModelOutput):
@@ -413,10 +421,10 @@ def compute_seq_log_probability(
 
     logprobs = log_softmax(logits, dim=-1)
 
+    red = torch.mean if reduction == "mean" else torch.sum
+
     res = float(
-        torch.sum(
-            logprobs.gather(1, torch.tensor(post_seq_tokens).unsqueeze(1)).squeeze()
-        )
+        red(logprobs.gather(1, torch.tensor(post_seq_tokens).unsqueeze(1)).squeeze())
     )
 
     return res
