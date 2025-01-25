@@ -4,13 +4,14 @@ from ast import literal_eval
 
 from fire import Fire
 
-from ykutil.dataset import colorcode_entry
+from ykutil.dataset import colorcode_entry, count_token_sequence
 from ykutil.dataset import describe_dataset as ds_describe_dataset
 from ykutil.tools import bulk_rename
 
 
 def do_bulk_rename():
     Fire(bulk_rename)
+
 
 def beautify_json(json_str: str):
     print(json.dumps(json.loads(json_str), indent=4))
@@ -29,10 +30,10 @@ def describe_dataset(
     return ds_describe_dataset(ds, tokenizer, show_rows)
 
 
-def tokenize(tk: str, text: str):
+def tokenize(tk: str, text: str, add_special_tokens: bool = False):
     from ykutil.transformer import tokenize as tk_tokenize
 
-    return tk_tokenize(tk_name=tk, text=text)
+    return tk_tokenize(tk_name=tk, text=text, add_special_tokens=add_special_tokens)
 
 
 def untokenize(tk: str, tokens: str):
@@ -58,8 +59,11 @@ def do_tokenize():
     parser = argparse.ArgumentParser()
     parser.add_argument("tk", type=str)
     parser.add_argument("text", type=str)
+    parser.add_argument("--add_special_tokens", action="store_true")
     args = parser.parse_args()
-    return tokenize(tk=args.tk, text=args.text)
+    return tokenize(
+        tk=args.tk, text=args.text, add_special_tokens=args.add_special_tokens
+    )
 
 
 def do_untokenize():
@@ -87,6 +91,24 @@ def do_colorcode_dataset():
         num_end=args.end,
         beautify=not args.ugly,
     )
+
+
+def do_count_token_sequence():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ds_path", type=str)
+    parser.add_argument("token_sequence", type=str)
+    parser.add_argument("--start", type=int, default=0)
+    parser.add_argument("--end", type=int, default=1)
+    args = parser.parse_args()
+    token_sequence = literal_eval(args.token_sequence)
+
+    count = count_token_sequence(
+        token_ds_path=args.ds_path,
+        token_sequence=token_sequence,
+        num_start=args.start,
+        num_end=args.end,
+    )
+    print(count)
 
 
 def do_beautify_json():

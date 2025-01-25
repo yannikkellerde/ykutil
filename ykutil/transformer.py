@@ -23,6 +23,8 @@ from transformers import (
 from transformers.generation.utils import GenerateOutput
 
 from ykutil.python import list_squeeze
+from ykutil.log_util import log
+from ykutil.constants import IGNORE_INDEX
 
 try:
     from transformer_heads.output import HeadedModelOutput
@@ -340,8 +342,8 @@ class DataCollatorWithPadding:
                             [feature[key].clone().detach() for feature in features]
                         )
                     except RuntimeError as e:
-                        print("Failure for key", key)
-                        print(e)
+                        log("Failure for key", key)
+                        log(e)
                 elif isinstance(features[0][key], list) and type(
                     features[0][key][0]
                 ) in (
@@ -351,8 +353,8 @@ class DataCollatorWithPadding:
                     try:
                         batch[key] = torch.stack([feature[key] for feature in features])
                     except RuntimeError as e:
-                        print("Failure for key", key)
-                        print(e)
+                        log("Failure for key", key)
+                        log(e)
                 else:
                     batch[key] = [feature[key] for feature in features]
                 if key in self.feature_name_to_new_data_type:
@@ -383,9 +385,10 @@ def dict_from_chat_template(chat_template_str: str, tk_type="llama3"):
         raise ValueError(f"Unknown tk_type: {tk_type}")
 
 
-def tokenize(tk_name: str, text: str):
+def tokenize(tk_name: str, text: str, add_special_tokens: bool = False):
+    text = text.replace("\\n", "\n").replace("\\t", "\t")
     tk = AutoTokenizer.from_pretrained(tk_name)
-    return tk(text)
+    return tk(text, add_special_tokens=add_special_tokens)
 
 
 def untokenize(tk_name: str, tokens: List[int]):

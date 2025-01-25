@@ -1,3 +1,4 @@
+import time
 from collections import defaultdict
 from math import sqrt
 
@@ -7,6 +8,7 @@ class Statlogger:
         self.statistics = defaultdict(float)
         self.sum_stats = defaultdict(float)
         self.statnumbers = defaultdict(int)
+        self.timers = dict()
 
     def reset(self):
         self.statistics.clear()
@@ -21,6 +23,17 @@ class Statlogger:
 
     def update_sum_stat(self, key, value):
         self.sum_stats[key] += value
+
+    def start_timer(self, key):
+        self.timers[key] = time.perf_counter()
+
+    def stop_timer(self, key, average=False, summed=True):
+        assert summed or average
+        if average:
+            self.update(f"average_{key}", time.perf_counter() - self.timers[key])
+        if summed:
+            self.update_sum_stat(f"total_{key}", time.perf_counter() - self.timers[key])
+        del self.timers[key]
 
     @property
     def stats(self):

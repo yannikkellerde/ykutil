@@ -543,6 +543,35 @@ def list_in_list(lst: list, sublst: list) -> bool:
     return False
 
 
+def count_sublist_occurrences(lst: list, sublst: list) -> int:
+    """
+    >>> count_sublist_occurrences([1, 2, 3, 4, 3, 2, 2, 3, 4], [2, 3])
+    2
+    """
+    count = 0
+    for i in range(len(lst) - len(sublst) + 1):
+        if lst[i : i + len(sublst)] == sublst:
+            count += 1
+    return count
+
+
+def remove_until(lst: list[T], elem: T, remove_elem=True) -> list[T]:
+    """
+    >>> remove_until([1, 2, 3, 4, 3, 2, 2, 3, 4], 3, remove_elem=False)
+    [3, 4, 3, 2, 2, 3, 4]
+    >>> remove_until([1, 2, 3, 4, 3, 2, 2, 3, 4], 3, remove_elem=True)
+    [4, 3, 2, 2, 3, 4]
+    """
+    try:
+        idx = lst.index(elem)
+    except ValueError:
+        return lst
+
+    if remove_elem:
+        return lst[idx + 1 :]
+    return lst[idx:]
+
+
 def unique_n_times(
     lst: list,
     n: int,

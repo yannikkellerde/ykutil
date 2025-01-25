@@ -14,6 +14,7 @@ def compute_policy_metrics(
     outputs: CausalLMOutputWithPast,
     input_dic: dict[str, torch.Tensor],
     model: torch.nn.Module,
+    **kwargs,
 ):
     labels = input_dic["labels"]
     metrics = {}
@@ -32,6 +33,7 @@ def compute_classification_head_metrics(
     outputs: HeadedModelOutput,
     input_dic: dict[str, torch.Tensor],
     model: HeadedModel,
+    head_remap: dict[str, str] = {},
 ):
     metrics = {}
 
@@ -55,13 +57,35 @@ def compute_classification_head_metrics(
     for head_name, preds in outputs.preds_by_head.items():
         if head_name == "lm_head":
             continue
-        labs = input_dic[model.head_configs[head_name].target]
-        preds = sigmoid(preds[labs != IGNORE_INDEX]).detach()
+        if head_name in head_remap:
+            labs = input_dic[head_remap[head_name]]
+        else:
+            labs = input_dic[model.head_configs[head_name].target]
+
+        if "logits" in model.head_configs[head_name].loss_fct:
+            preds = sigmoid(preds[labs != IGNORE_INDEX]).detach()
+        else:
+            preds = preds[labs != IGNORE_INDEX].detach()
         labs = labs[labs != IGNORE_INDEX]
+
+        assert torch.max(preds) <= 1.0 and torch.min(preds) >= 0.0
+
         preds_round = torch.round(preds)
         correctness = (preds_round == labs).float()
+
+        # true_positives = (preds_round * labs).sum()
+        # false_positives = (preds_round * (1 - labs)).sum()
+        # false_negatives = ((1 - preds_round) * labs).sum()
+        # metrics[f"{head_name}_true_positives"] = true_positives.item()
+        # metrics[f"{head_name}_false_positives"] = false_positives.item()
+        # metrics[f"{head_name}_false_negatives"] = false_negatives.item()
+
+        # precision = true_positives / (true_positives + false_positives)
+        # recall = true_positives / (true_positives + false_negatives)
+
         precision = (preds_round * labs).sum() / preds_round.sum()
         recall = (preds_round * labs).sum() / labs.sum()
+
         f1 = 2 * precision * recall / (precision + recall)
         metrics[f"{head_name}_accuracy"] = correctness.mean().item()
         metrics[f"{head_name}_bias"] = preds.mean().item()
@@ -69,6 +93,7 @@ def compute_classification_head_metrics(
         metrics[f"{head_name}_precision"] = precision.item()
         metrics[f"{head_name}_recall"] = recall.item()
         metrics[f"{head_name}_f1"] = f1.item()
+        metrics[f"{head_name}_label_avg"] = labs.float().mean().item()
 
     return metrics
 
@@ -85,7 +110,7 @@ def compute_metric(pred: float, targ: float, metric_type: str):
             return int(round(pred) == targ)
         case "bce":
             return -targ * np.log(pred) - (1 - targ) * np.log(1 - pred)
-        case "_":
+        case _:
             raise ValueError(f"Unknown metric type {metric_type}")
 
 
