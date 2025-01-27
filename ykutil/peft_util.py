@@ -50,7 +50,11 @@ def load_maybe_peft_model_tokenizer(
         if use_unsloth:
             print("Loading fast unsloth model", model_path)
             return load_unsloth_model_for_inference(
-                model_path, torch_dtype=torch_dtype, device_map=device_map
+                model_path,
+                torch_dtype=torch_dtype,
+                device_map=device_map,
+                load_in_4bit=quantization_config is not None
+                and quantization_config.load_in_4bit,
             )
         elif os.path.isfile(os.path.join(model_path, "head_configs.json")):
             model_params = get_model_params(base_model_name)

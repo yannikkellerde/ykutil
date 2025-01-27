@@ -18,6 +18,7 @@ from .python import (
     approx_number_split,
     check_if_in_other_list,
     chunk_list,
+    count_sublist_occurrences,
     dict_percentages,
     dict_without,
     flatten,
@@ -30,7 +31,6 @@ from .python import (
     list_rindex,
     list_split,
     list_split_at_value,
-    count_sublist_occurrences,
     list_squeeze,
     make_list_unique,
     multify_text,
@@ -40,6 +40,7 @@ from .python import (
     recursed_dict_percentages,
     recursed_merge_percent_stats,
     recursed_sum_up_stats,
+    remove_until,
     removesuffixes,
     shortest_common_supersequence,
     split_multi,
@@ -47,7 +48,6 @@ from .python import (
     transpose_li_of_dict,
     unique_n_times,
     update_running_avg,
-    remove_until,
 )
 from .statistics import Statlogger, Welfords
 from .tools import bulk_rename

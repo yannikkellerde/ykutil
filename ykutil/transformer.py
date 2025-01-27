@@ -22,9 +22,8 @@ from transformers import (
 )
 from transformers.generation.utils import GenerateOutput
 
-from ykutil.python import list_squeeze
 from ykutil.log_util import log
-from ykutil.constants import IGNORE_INDEX
+from ykutil.python import list_squeeze
 
 try:
     from transformer_heads.output import HeadedModelOutput

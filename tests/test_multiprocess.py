@@ -1,8 +1,6 @@
 import torch
 
-from ykutil.multiprocess import (
-    run_in_parallel,
-)
+from ykutil.multiprocess import run_in_parallel
 
 
 def tensor_fill(tensor, fill_value, floatadd, extra_add=0):

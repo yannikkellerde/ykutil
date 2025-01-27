@@ -11,12 +11,17 @@ def from_file(cls: Type[T], config_file: str, **argmod) -> T:
     with open(config_file, "r") as f:
         config = defaultdict(dict, yaml.safe_load(f.read()))
 
-    for key, value in argmod.items():
+    for key, value in tuple(argmod.items()):
         path = key.split(".")
         c = config
         for p in path[:-1]:
+            if p not in c:
+                break
             c = c[p]
-        c[path[-1]] = value
+        else:
+            if path[-1] in c:
+                c[path[-1]] = value
+                del argmod[key]
 
     args = from_dict(data_class=cls, data=config)
     return args
