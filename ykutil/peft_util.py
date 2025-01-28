@@ -29,6 +29,8 @@ def load_unsloth_model_for_inference(
     )
     FastLanguageModel.for_inference(model)
 
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+
     return model, tokenizer
 
 

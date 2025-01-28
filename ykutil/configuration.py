@@ -7,7 +7,7 @@ from dacite import from_dict
 from ykutil.types_util import T
 
 
-def from_file(cls: Type[T], config_file: str, **argmod) -> T:
+def from_file(cls: Type[T], config_file: str, **argmod) -> tuple[T, dict]:
     with open(config_file, "r") as f:
         config = defaultdict(dict, yaml.safe_load(f.read()))
 
@@ -24,4 +24,4 @@ def from_file(cls: Type[T], config_file: str, **argmod) -> T:
                 del argmod[key]
 
     args = from_dict(data_class=cls, data=config)
-    return args
+    return args, argmod
