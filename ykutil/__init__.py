@@ -11,6 +11,7 @@ from .data_model import (
 )
 from .log_util import add_file_handler, log
 from .multiproc import apply_args_and_kwargs, run_in_parallel, starmap_with_kwargs
+from .sql import merge_databases
 from .python import (
     all_equal,
     anyin,
@@ -52,6 +53,7 @@ from .python import (
 from .statistics import Statlogger, Welfords
 from .tools import bulk_rename
 from .types_util import T, describe_type
+from .os_tools import search_file_in_folder
 
 if find_spec("torch") is not None and find_spec("numpy") is not None:
     from .print_tools import describe_array, describe_list
@@ -126,4 +128,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"

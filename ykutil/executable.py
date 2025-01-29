@@ -1,4 +1,5 @@
 import argparse
+import os
 import json
 from ast import literal_eval
 
@@ -7,6 +8,7 @@ from fire import Fire
 from ykutil.dataset import colorcode_entry, count_token_sequence
 from ykutil.dataset import describe_dataset as ds_describe_dataset
 from ykutil.tools import bulk_rename
+from ykutil.sql import merge_databases
 
 
 def do_bulk_rename():
@@ -40,6 +42,27 @@ def untokenize(tk: str, tokens: str):
     from ykutil.transformer import untokenize as tk_untokenize
 
     return tk_untokenize(tk_name=tk, tokens=literal_eval(tokens))
+
+
+def do_merge_databases():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("target_db", type=str)
+    parser.add_argument("source_dbs", type=str, nargs="+")
+    args = parser.parse_args()
+    return merge_databases(args.target_db, args.source_dbs)
+
+
+def do_merge_database_folder():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("target_db", type=str)
+    parser.add_argument("source_folder", type=str)
+    args = parser.parse_args()
+
+    source_dbs = [
+        os.path.join(args.source_folder, f) for f in os.listdir(args.source_folder)
+    ]
+
+    return merge_databases(args.target_db, source_dbs)
 
 
 def do_describe_dataset():
