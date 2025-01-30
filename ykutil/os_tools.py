@@ -1,6 +1,14 @@
 import os
 
 
+def find_all_file_paths(folder: str):
+    findings = []
+    for root, _, files in os.walk(folder):
+        for file in files:
+            findings.append(os.path.join(root, file))
+    return findings
+
+
 def search_file_in_folder(fname: str, folder: str):
     if os.path.isfile(fname):
         return fname

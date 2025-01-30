@@ -17,7 +17,10 @@ def from_file(cls: Type[T], config_file: str, **argmod) -> tuple[T, dict]:
         c = config
         for p in path[:-1]:
             if p not in c:
-                break
+                if isinstance(c, list):
+                    p = int(p)
+                else:
+                    break
             c = c[p]
         else:
             if path[-1] in c:

@@ -53,7 +53,7 @@ from .python import (
 from .statistics import Statlogger, Welfords
 from .tools import bulk_rename
 from .types_util import T, describe_type
-from .os_tools import search_file_in_folder
+from .os_tools import search_file_in_folder, find_all_file_paths
 
 if find_spec("torch") is not None and find_spec("numpy") is not None:
     from .print_tools import describe_array, describe_list
