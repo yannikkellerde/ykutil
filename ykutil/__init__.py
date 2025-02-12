@@ -23,6 +23,7 @@ from .python import (
     dict_percentages,
     dict_without,
     flatten,
+    first_true,
     identity,
     index_of_sublist_match,
     list_find_new,
@@ -33,6 +34,7 @@ from .python import (
     list_split,
     list_split_at_value,
     list_squeeze,
+    list_get,
     make_list_unique,
     multify_text,
     naive_regex_escape,
@@ -47,13 +49,20 @@ from .python import (
     split_multi,
     str_find_all,
     transpose_li_of_dict,
+    transpose_list,
     unique_n_times,
     update_running_avg,
+    dictsum,
+    vector_sum,
 )
-from .statistics import Statlogger, Welfords
+from .json_util import FlexibleJSONEncoder
+from .statistics import Statlogger, Welfords, compute_metric
 from .tools import bulk_rename
 from .types_util import T, describe_type
 from .os_tools import search_file_in_folder, find_all_file_paths
+
+if find_spec("yaml") is not None:
+    from .yaml_util import LiteralDumper, yaml_pretty_dump
 
 if find_spec("torch") is not None and find_spec("numpy") is not None:
     from .print_tools import describe_array, describe_list
@@ -124,8 +133,7 @@ if find_spec("torch") is not None:
             from .evaluation import (
                 EvaluateFirstStepCallback,
                 compute_classification_head_metrics,
-                compute_metric,
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.7"
+__version__ = "0.0.8"

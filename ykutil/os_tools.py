@@ -1,11 +1,12 @@
 import os
 
 
-def find_all_file_paths(folder: str):
+def find_all_file_paths(folder: str, force_ending=None):
     findings = []
     for root, _, files in os.walk(folder):
         for file in files:
-            findings.append(os.path.join(root, file))
+            if force_ending is None or file.endswith(force_ending):
+                findings.append(os.path.join(root, file))
     return findings
 
 

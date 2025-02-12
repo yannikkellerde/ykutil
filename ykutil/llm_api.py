@@ -8,6 +8,7 @@ from openai import AzureOpenAI
 from openai._base_client import BaseClient
 
 from ykutil.types_util import T
+from ykutil.log_util import log
 
 
 # Source: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/gpt-with-vision?tabs=rest
@@ -51,7 +52,10 @@ class ModelWrapper:
             msg_copy.append(response.choices[0].message.dict())
             with open(self.log_file, "a") as f:
                 f.write(json.dumps(msg_copy) + ",\n")
-        return response.choices[0].message.content
+        out = response.choices[0].message.content
+        if out is None:
+            log("Bad response", response, level="warn")
+        return out
 
     def structured_complete(
         self, messages: list[dict[str, str]], structure_class: Type[T], **kwargs
@@ -70,7 +74,10 @@ class ModelWrapper:
             with open(self.log_file, "a") as f:
                 f.write(json.dumps(msg_copy) + ",\n")
 
-        return response.choices[0].message
+        out = response.choices[0].message
+        if out is None:
+            log("Bad response", response, level="warn")
+        return out
 
     def compute_cost():
         raise NotImplementedError()

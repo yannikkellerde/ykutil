@@ -12,6 +12,48 @@ def identity(x):
     return x
 
 
+def dictsum(*dicts: list[dict[Any, int | float]]) -> dict[Any, int | float]:
+    """
+    >>> dictsum({"a": 1, "b": 2}, {"a": 3, "b": 4})
+    {'a': 4, 'b': 6}
+    """
+    out = {}
+    for d in dicts:
+        for k, v in d.items():
+            out[k] = out.get(k, 0) + v
+    return out
+
+
+def first_true(iterable):
+    for i, x in enumerate(iterable):
+        if x:
+            return i
+
+
+def transpose_list(lst: list[list]) -> list[list]:
+    """
+    >>> transpose_list([[1, 2, 3], [4, 5, 6]])
+    [[1, 4], [2, 5], [3, 6]]
+    """
+    return [list(x) for x in zip(*lst)]
+
+
+def list_get(lst: list, indices: list) -> list:
+    """
+    >>> list_get([1, 2, 3, 4, 5], [0, 2, 3])
+    [1, 3, 4]
+    """
+    return [lst[i] for i in indices]
+
+
+def vector_sum(list_a, list_b):
+    """
+    >>> vector_sum([1, 2, 3], [4, 5, 6])
+    [5, 7, 9]
+    """
+    return [a + b for a, b in zip(list_a, list_b)]
+
+
 def list_rindex(li, x):
     """
     >>> list_rindex([1, 2, 3, 1, 2, 3, 4], 3)

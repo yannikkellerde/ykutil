@@ -67,3 +67,19 @@ class Welfords:
 
     def __repr__(self):
         return f"Welfords(Mean: {self.mean}, Std: {self.std}, Count: {self.count})"
+
+
+def compute_metric(pred: float, targ: float, metric_type: str):
+    pred = float(pred)
+    targ = float(targ)
+    match metric_type:
+        case "mae":
+            return abs(pred - targ)
+        case "mse":
+            return (pred - targ) ** 2
+        case "acc":
+            return int(round(pred) == targ)
+        case "bce":
+            return -targ * np.log(pred) - (1 - targ) * np.log(1 - pred)
+        case _:
+            raise ValueError(f"Unknown metric type {metric_type}")

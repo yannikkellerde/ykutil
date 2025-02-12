@@ -72,6 +72,7 @@ def compute_classification_head_metrics(
 
         preds_round = torch.round(preds)
         correctness = (preds_round == labs).float()
+        mse = torch.mean((preds - labs) ** 2)
 
         # true_positives = (preds_round * labs).sum()
         # false_positives = (preds_round * (1 - labs)).sum()
@@ -94,24 +95,9 @@ def compute_classification_head_metrics(
         metrics[f"{head_name}_recall"] = recall.item()
         metrics[f"{head_name}_f1"] = f1.item()
         metrics[f"{head_name}_label_avg"] = labs.float().mean().item()
+        metrics[f"{head_name}_mse"] = mse.item()
 
     return metrics
-
-
-def compute_metric(pred: float, targ: float, metric_type: str):
-    pred = float(pred)
-    targ = float(targ)
-    match metric_type:
-        case "mae":
-            return abs(pred - targ)
-        case "mse":
-            return (pred - targ) ** 2
-        case "acc":
-            return int(round(pred) == targ)
-        case "bce":
-            return -targ * np.log(pred) - (1 - targ) * np.log(1 - pred)
-        case _:
-            raise ValueError(f"Unknown metric type {metric_type}")
 
 
 class EvaluateFirstStepCallback(TrainerCallback):
