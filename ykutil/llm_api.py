@@ -1,131 +1,81 @@
-import base64
-import json
+import requests
 import os
-from mimetypes import guess_type
-from typing import Optional, Type
-
-from openai import AzureOpenAI
-from openai._base_client import BaseClient
-
-from ykutil.types_util import T
-from ykutil.log_util import log
+import json
+import argparse
 
 
-# Source: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/gpt-with-vision?tabs=rest
-# Function to encode a local image into data URL
-def local_image_to_data_url(image_path):
-    # Guess the MIME type of the image based on the file extension
-    mime_type, _ = guess_type(image_path)
-    if mime_type is None:
-        mime_type = "application/octet-stream"  # Default MIME type if none is found
+def process_file(
+    file_path: str,
+    model_name: str,
+    url: str = "http://localhost:30000/v1/chat/completions",
+    temperature: float = 1.0,
+    max_tokens: int = 100,
+):
 
-    # Read and encode the image file
-    with open(image_path, "rb") as image_file:
-        base64_encoded_data = base64.b64encode(image_file.read()).decode("utf-8")
+    with open(file_path, "r") as f:
+        data = [json.loads(x) for x in f.readlines()]
 
-    # Construct the data URL
-    return f"data:{mime_type};base64,{base64_encoded_data}"
+    for example in data:
+        llm_request = {
+            "model": model_name,
+            "messages": [{"role": "user", "content": example["prompt"]}],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        header = {
+            "Content-Type": "application/json",
+        }
+        result = requests.post(url, json=llm_request, headers=header)
+        example["response"] = result.json()["choices"][0]["message"]["content"]
 
-
-def human_readable_parse(messages: list[dict[str, str]]):
-    return "\n".join([f'{msg["role"]}:\n{msg["content"]}' for msg in messages])
-
-
-class ModelWrapper:
-    def __init__(
-        self, client: BaseClient, model_name: str, log_file: Optional[str] = None
-    ):
-        self.client = client
-        self.model_name = model_name
-        self.log_file = log_file
-        self.stats = {"requests": 0, "input_tokens": 0, "completion_tokens": 0}
-
-    def complete(self, messages: list[dict[str, str]], **kwargs) -> str:
-        response = self.client.chat.completions.create(
-            model=self.model_name, messages=messages, **kwargs
-        )
-        self.stats["requests"] += 1
-        self.stats["input_tokens"] += response.usage.prompt_tokens
-        self.stats["completion_tokens"] += response.usage.completion_tokens
-        if self.log_file is not None:
-            msg_copy = messages.copy()
-            msg_copy.append(response.choices[0].message.dict())
-            with open(self.log_file, "a") as f:
-                f.write(json.dumps(msg_copy) + ",\n")
-        out = response.choices[0].message.content
-        if out is None:
-            log("Bad response", response, level="warn")
-        return out
-
-    def structured_complete(
-        self, messages: list[dict[str, str]], structure_class: Type[T], **kwargs
-    ):
-        response = self.client.beta.chat.completions.parse(
-            model=self.model_name,
-            messages=messages,
-            response_format=structure_class,
-        )
-        self.stats["requests"] += 1
-        self.stats["input_tokens"] += response.usage.prompt_tokens
-        self.stats["completion_tokens"] += response.usage.completion_tokens
-        if self.log_file is not None:
-            msg_copy = messages.copy()
-            msg_copy.append(response.choices[0].message.dict())
-            with open(self.log_file, "a") as f:
-                f.write(json.dumps(msg_copy) + ",\n")
-
-        out = response.choices[0].message
-        if out is None:
-            log("Bad response", response, level="warn")
-        return out
-
-    def compute_cost():
-        raise NotImplementedError()
+    with open(file_path, "w") as f:
+        for example in data:
+            f.write(json.dumps(example) + "\n")
 
 
-class AzureModelWrapper(ModelWrapper):
-    def __init__(
-        self,
-        model_name: str = "gpt-4o",
-        log_file=None,
-        api_version="2024-08-01-preview",
-    ):
-        self.client = AzureOpenAI(
-            api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
-            api_version=api_version,
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        )
-        super().__init__(self.client, model_name, log_file)
+def process_folder(
+    folder_path: str,
+    model_name: str,
+    url: str = "http://localhost:30000/v1/chat/completions",
+    temperature: float = 1.0,
+    max_tokens: int = 100,
+):
+    for file in os.listdir(folder_path):
+        if file.endswith(".jsonl"):
+            process_file(
+                os.path.join(folder_path, file),
+                model_name,
+                url,
+                temperature,
+                max_tokens,
+            )
 
-    def compute_cost(
-        self,
-        input_token_cost: Optional[float] = None,
-        output_token_cost: Optional[float] = None,
-    ) -> float:
-        if input_token_cost is None:
-            assert output_token_cost is None
-            if "gpt-4o" in self.model_name:
-                if "mini" in self.model_name:
-                    input_token_cost = 0.000165 / 1000
-                    output_token_cost = 0.00066 / 1000
-                else:
-                    if "2024-08-06" in self.model_name:
-                        input_token_cost = 0.0025 / 1000
-                        output_token_cost = 0.010 / 1000
-                    else:
-                        input_token_cost = 0.005 / 1000
-                        output_token_cost = 0.015 / 1000
-            elif "gpt-35" in self.model_name:
-                input_token_cost = 0.0005 / 1000
-                output_token_cost = 0.0015 / 1000
-            else:
-                raise ValueError(
-                    f"Unknown model name: {self.model_name}. Please provide"
-                    " input_token_cost and output_token_cost."
-                )
 
-        total_cost = (
-            self.stats["input_tokens"] * input_token_cost
-            + self.stats["completion_tokens"] * output_token_cost
-        )
-        return total_cost
+def do_process_folder():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("folder_path", type=str)
+    parser.add_argument("model_name", type=str)
+    parser.add_argument(
+        "--url", type=str, default="http://localhost:30000/v1/chat/completions"
+    )
+    parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument("--max_tokens", type=int, default=100)
+    args = parser.parse_args()
+    process_folder(
+        args.folder_path, args.model_name, args.url, args.temperature, args.max_tokens
+    )
+
+
+def do_process_file():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file_path", type=str)
+    parser.add_argument("model_name", type=str)
+    parser.add_argument(
+        "--url", type=str, default="http://localhost:30000/v1/chat/completions"
+    )
+    parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument("--max_tokens", type=int, default=100)
+    args = parser.parse_args()
+    process_file(
+        args.file_path, args.model_name, args.url, args.temperature, args.max_tokens
+    )

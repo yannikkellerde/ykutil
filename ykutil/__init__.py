@@ -12,6 +12,7 @@ from .data_model import (
 from .log_util import add_file_handler, log
 from .multiproc import apply_args_and_kwargs, run_in_parallel, starmap_with_kwargs
 from .sql import merge_databases
+from .llm_api import process_file, process_folder
 from .python import (
     all_equal,
     anyin,
@@ -71,7 +72,7 @@ if find_spec("pandera") is not None:
     from .pandera_util import empty_dataframe_from_model
 
 if find_spec("openai") is not None and find_spec("pydantic") is not None:
-    from .llm_api import (
+    from .openai_api import (
         AzureModelWrapper,
         ModelWrapper,
         human_readable_parse,
@@ -136,4 +137,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
