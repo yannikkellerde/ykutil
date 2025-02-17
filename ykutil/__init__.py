@@ -12,7 +12,6 @@ from .data_model import (
 from .log_util import add_file_handler, log
 from .multiproc import apply_args_and_kwargs, run_in_parallel, starmap_with_kwargs
 from .sql import merge_databases
-from .llm_api import process_file, process_folder
 from .python import (
     all_equal,
     anyin,
@@ -57,11 +56,20 @@ from .python import (
     vector_sum,
 )
 from .json_util import FlexibleJSONEncoder
-from .statistics import Statlogger, Welfords, compute_metric
 from .tools import bulk_rename
 from .types_util import T, describe_type
 from .os_tools import search_file_in_folder, find_all_file_paths
 
+
+if find_spec("requests") is not None:
+    from .llm_api import process_file, process_folder, SglangModelWrapper
+if find_spec("scipy") is not None:
+    from .statistics import (
+        Statlogger,
+        Welfords,
+        compute_metric,
+        clopper_pearson_interval,
+    )
 if find_spec("yaml") is not None:
     from .yaml_util import LiteralDumper, yaml_pretty_dump
 

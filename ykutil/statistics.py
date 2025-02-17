@@ -1,6 +1,7 @@
 import time
 from collections import defaultdict
 from math import sqrt
+from scipy.stats import beta
 
 
 class Statlogger:
@@ -83,3 +84,27 @@ def compute_metric(pred: float, targ: float, metric_type: str):
             return -targ * np.log(pred) - (1 - targ) * np.log(1 - pred)
         case _:
             raise ValueError(f"Unknown metric type {metric_type}")
+
+
+def clopper_pearson_interval(successes, trials, confidence_level=0.95):
+    """
+    Compute the Clopper-Pearson confidence interval.
+
+    Parameters:
+        successes (int): Number of successes.
+        trials (int): Total number of trials.
+        confidence_level (float): Confidence level (e.g., 0.95 for 95% confidence).
+
+    Returns:
+        (lower_bound, upper_bound): The confidence interval bounds.
+    """
+    alpha = 1 - confidence_level
+    lower_bound = (
+        beta.ppf(alpha / 2, successes, trials - successes + 1) if successes > 0 else 0.0
+    )
+    upper_bound = (
+        beta.ppf(1 - alpha / 2, successes + 1, trials - successes)
+        if successes < trials
+        else 1.0
+    )
+    return lower_bound, upper_bound

@@ -2,6 +2,20 @@ import requests
 import os
 import json
 import argparse
+from urllib.parse import urljoin
+
+
+class SglangModelWrapper:
+    def __init__(self, host: str, model_name: str):
+        self.host = host
+        self.model_name = model_name
+
+    def complete(self, messages: list[dict[str, str]], **kwargs) -> str:
+        response = requests.post(
+            urljoin(self.host, "/v1/chat/completions"),
+            json={"model": self.model_name, "messages": messages, **kwargs},
+        )
+        return response.json()["choices"][0]["message"]["content"]
 
 
 def process_file(
