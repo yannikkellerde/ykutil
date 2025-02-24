@@ -29,22 +29,26 @@ def process_file(
     with open(file_path, "r") as f:
         data = [json.loads(x) for x in f.readlines()]
 
+    made_changes = False
     for example in data:
-        llm_request = {
-            "model": model_name,
-            "messages": [{"role": "user", "content": example["prompt"]}],
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-        header = {
-            "Content-Type": "application/json",
-        }
-        result = requests.post(url, json=llm_request, headers=header)
-        example["response"] = result.json()["choices"][0]["message"]["content"]
+        if "response" not in example:
+            made_changes = True
+            llm_request = {
+                "model": model_name,
+                "messages": [{"role": "user", "content": example["prompt"]}],
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+            }
+            header = {
+                "Content-Type": "application/json",
+            }
+            result = requests.post(url, json=llm_request, headers=header)
+            example["response"] = result.json()["choices"][0]["message"]["content"]
 
-    with open(file_path, "w") as f:
-        for example in data:
-            f.write(json.dumps(example) + "\n")
+    if made_changes:
+        with open(file_path, "w") as f:
+            for example in data:
+                f.write(json.dumps(example) + "\n")
 
 
 def process_folder(
@@ -63,6 +67,23 @@ def process_folder(
                 temperature,
                 max_tokens,
             )
+
+
+def count_fulfilled_requests(
+    folder_path: str,
+):
+    fulfilled = 0
+    todo = 0
+    for file in os.listdir(folder_path):
+        if file.endswith(".jsonl"):
+            with open(os.path.join(folder_path, file), "r") as f:
+                data = [json.loads(x) for x in f.readlines()]
+            for example in data:
+                if "response" in example:
+                    fulfilled += 1
+                else:
+                    todo += 1
+    print(f"Fulfilled: {fulfilled}, Todo: {todo}")
 
 
 def do_process_folder():

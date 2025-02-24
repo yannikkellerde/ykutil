@@ -56,19 +56,31 @@ from .python import (
     vector_sum,
 )
 from .json_util import FlexibleJSONEncoder
-from .tools import bulk_rename
+from .tools import bulk_rename, random_string
 from .types_util import T, describe_type
 from .os_tools import search_file_in_folder, find_all_file_paths
 
+if find_spec("matplotlib") is not None:
+    from .plotting import barplot_annotate_brackets
 
 if find_spec("requests") is not None:
-    from .llm_api import process_file, process_folder, SglangModelWrapper
+    from .llm_api import (
+        process_file,
+        process_folder,
+        SglangModelWrapper,
+        count_fulfilled_requests,
+    )
 if find_spec("scipy") is not None:
     from .statistics import (
         Statlogger,
         Welfords,
         compute_metric,
         clopper_pearson_interval,
+        wald_proportion_diff,
+        double_diff_p_value,
+        wald_proportion_p_value,
+        exact_bernoulli_p_value,
+        monte_carlo_bernoulli_p_value,
     )
 if find_spec("yaml") is not None:
     from .yaml_util import LiteralDumper, yaml_pretty_dump
