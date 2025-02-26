@@ -26,6 +26,7 @@ from .python import (
     first_true,
     identity,
     index_of_sublist_match,
+    count_sublist_matches,
     list_find_new,
     list_flip,
     list_in_list,
@@ -59,6 +60,12 @@ from .json_util import FlexibleJSONEncoder
 from .tools import bulk_rename, random_string
 from .types_util import T, describe_type
 from .os_tools import search_file_in_folder, find_all_file_paths
+from .statistics import (
+    Statlogger,
+    Welfords,
+    compute_metric,
+    monte_carlo_bernoulli_p_value,
+)
 
 if find_spec("matplotlib") is not None:
     from .plotting import barplot_annotate_brackets
@@ -71,16 +78,12 @@ if find_spec("requests") is not None:
         count_fulfilled_requests,
     )
 if find_spec("scipy") is not None:
-    from .statistics import (
-        Statlogger,
-        Welfords,
-        compute_metric,
+    from .statistics_scipy import (
         clopper_pearson_interval,
         wald_proportion_diff,
         double_diff_p_value,
         wald_proportion_p_value,
         exact_bernoulli_p_value,
-        monte_carlo_bernoulli_p_value,
     )
 if find_spec("yaml") is not None:
     from .yaml_util import LiteralDumper, yaml_pretty_dump
@@ -157,4 +160,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.9"
+__version__ = "0.0.10"

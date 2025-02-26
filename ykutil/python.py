@@ -202,6 +202,18 @@ def index_of_sublist_match(haystack: List[list], needle: list) -> int:
     return [x[: len(needle)] for x in haystack].index(needle)
 
 
+def count_sublist_matches(haystack: List[list], needle: list) -> int:
+    """
+    >>> count_sublist_matches([[3, 4, 3], [1, 3, 2, 4], [1, 2]], [1, 3])
+    1
+    """
+    count = 0
+    for sublist in haystack:
+        if sublist[: len(needle)] == needle:
+            count += 1
+    return count
+
+
 def anyin(needles: Iterable, haystack: Iterable) -> bool:
     """
     >>> anyin([1, 2, 3], [3, 4, 5])
