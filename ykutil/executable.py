@@ -20,7 +20,10 @@ def beautify_json(json_str: str):
 
 
 def describe_dataset(
-    ds_name: str, tokenizer_name: str = None, show_rows: tuple = (0, 3)
+    ds_name: str,
+    tokenizer_name: str = None,
+    show_rows: tuple = (0, 3),
+    zip_labels=False,
 ):
     from datasets import Dataset
     from transformers import AutoTokenizer
@@ -29,7 +32,7 @@ def describe_dataset(
     tokenizer = (
         AutoTokenizer.from_pretrained(tokenizer_name) if tokenizer_name else None
     )
-    return ds_describe_dataset(ds, tokenizer, show_rows)
+    return ds_describe_dataset(ds, tokenizer, show_rows, zip_labels)
 
 
 def tokenize(tk: str, text: str, add_special_tokens: bool = False):
@@ -70,11 +73,13 @@ def do_describe_dataset():
     parser.add_argument("ds_name", type=str)
     parser.add_argument("--tokenizer_name", type=str, default=None)
     parser.add_argument("--show_rows", type=int, nargs="+", default=(0, 3))
+    parser.add_argument("--zip_labels", action="store_true")
     args = parser.parse_args()
     return describe_dataset(
         ds_name=args.ds_name,
         tokenizer_name=args.tokenizer_name,
         show_rows=tuple(args.show_rows),
+        zip_labels=args.zip_labels,
     )
 
 

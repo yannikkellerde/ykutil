@@ -102,7 +102,7 @@ if find_spec("openai") is not None and find_spec("pydantic") is not None:
         local_image_to_data_url,
     )
 
-if find_spec("dacite") is not None and find_spec("yaml") is not None:
+if find_spec("pydantic") is not None and find_spec("yaml") is not None:
     from .configuration import from_file
 
 if find_spec("torch") is not None:
@@ -160,4 +160,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.10"
+__version__ = "0.0.11"

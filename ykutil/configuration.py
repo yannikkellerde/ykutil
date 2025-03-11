@@ -3,7 +3,7 @@ import os
 from typing import Type
 
 import yaml
-from dacite import from_dict
+from pydantic import BaseModel
 
 from ykutil.types_util import T
 
@@ -27,5 +27,11 @@ def from_file(cls: Type[T], config_file: str, **argmod) -> tuple[T, dict]:
                 c[path[-1]] = value
                 del argmod[key]
 
-    args = from_dict(data_class=cls, data=config)
+    if issubclass(cls, BaseModel):
+        args = cls.model_validate(config)
+
+    else:
+        from dacite import from_dict
+
+        args = from_dict(data_class=cls, data=config)
     return args, argmod

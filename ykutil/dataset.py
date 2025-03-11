@@ -7,7 +7,7 @@ from ykutil.transformer import load_tk_with_pad_tk
 from ykutil.types_util import describe_type
 
 
-def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0, 3)):
+def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0, 3), zip_labels=False):
     pr = lambda p: print("###############\n" + p)
     pr("Metadata:")
     print(ds.info)
@@ -19,8 +19,18 @@ def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0, 3)):
     for i in range(*show_rows):
         example = ds[i]
         if "input_ids" in example and tokenizer is not None:
-            example["input_ids"] = tokenizer.decode(example["input_ids"])
-        print(example)
+            if zip_labels:
+                assert "labels" in example
+                tokens = tokenizer.convert_ids_to_tokens(example["input_ids"])
+                for token, label in zip(tokens, example["labels"]):
+                    if label != IGNORE_INDEX:
+                        print(f"({token}, {float(label)})", end=" ")
+                    else:
+                        print(token, end=" ")
+
+            else:
+                example["input_ids"] = tokenizer.decode(example["input_ids"])
+                print(example)
 
 
 def colorcode_dataset(
