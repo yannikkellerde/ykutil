@@ -17,8 +17,9 @@ level_map = {
 }
 
 
-def add_file_handler(file_path):
+def add_file_handler(file_path, level=logging.INFO):
     fl = logging.FileHandler(file_path, mode="w")
+    fl.setLevel(level)
     fl.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
     logger.addHandler(fl)
 
