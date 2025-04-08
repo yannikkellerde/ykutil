@@ -4,8 +4,9 @@ import os
 
 if not "log_util" in logging.Logger.manager.loggerDict:
     logger = logging.getLogger("log_util")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     hl = logging.StreamHandler()
+    hl.setLevel(logging.INFO)
     hl.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
     logger.addHandler(hl)
 
@@ -18,6 +19,8 @@ level_map = {
 
 
 def add_file_handler(file_path, level=logging.INFO):
+    if isinstance(level, str):
+        level = level_map[level.upper()]
     fl = logging.FileHandler(file_path, mode="w")
     fl.setLevel(level)
     fl.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
