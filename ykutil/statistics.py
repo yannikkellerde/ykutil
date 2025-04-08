@@ -1,4 +1,5 @@
 import time
+import threading
 from collections import defaultdict
 from math import sqrt
 import numpy as np
@@ -26,19 +27,25 @@ class Statlogger:
         self.sum_stats[key] += value
 
     def start_timer(self, key):
-        self.timers[key] = time.perf_counter()
+        thread_id = threading.get_ident()
+        thread_key = f"{key}_{thread_id}"
+        self.timers[thread_key] = time.perf_counter()
 
     def stop_timer(self, key, average=False, summed=True):
+        thread_id = threading.get_ident()
+        thread_key = f"{key}_{thread_id}"
         assert summed or average
         if average:
-            self.update(f"average_{key}", time.perf_counter() - self.timers[key])
+            self.update(f"average_{key}", time.perf_counter() - self.timers[thread_key])
         if summed:
-            self.update_sum_stat(f"total_{key}", time.perf_counter() - self.timers[key])
-        del self.timers[key]
+            self.update_sum_stat(
+                f"total_{key}", time.perf_counter() - self.timers[thread_key]
+            )
+        del self.timers[thread_key]
 
     @property
     def stats(self):
-        some_dic = self.statistics.copy()
+        some_dic = dict(self.statistics)
         some_dic.update(self.sum_stats)
         return some_dic
 
