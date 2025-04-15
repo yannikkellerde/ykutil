@@ -94,6 +94,9 @@ if find_spec("torch") is not None and find_spec("numpy") is not None:
 if find_spec("pandera") is not None:
     from .pandera_util import empty_dataframe_from_model
 
+if find_spec("pandas") is not None:
+    from .pandas_util import expand_json_cols
+
 if find_spec("openai") is not None and find_spec("pydantic") is not None:
     from .openai_api import (
         AzureModelWrapper,
