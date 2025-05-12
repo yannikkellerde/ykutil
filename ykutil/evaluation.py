@@ -29,6 +29,49 @@ def compute_policy_metrics(
 
 
 @torch.inference_mode()
+def compute_value_metrics(
+    outputs: HeadedModelOutput,
+    input_dic: dict[str, torch.Tensor],
+    model: HeadedModel,
+    head_remap: dict[str, str] = {},
+):
+    metrics = {}
+    for key, value in outputs.loss_by_head.items():
+        metrics[f"loss_{key}"] = float(value)
+        if (
+            outputs.adapted_loss_by_head is not None
+            and key in outputs.adapted_loss_by_head
+        ):
+            adapted = outputs.adapted_loss_by_head[key]
+            if adapted != value:
+                metrics[f"adapted_loss_{key}"] = float(adapted)
+
+    for head_name, preds in outputs.preds_by_head.items():
+        if head_name == "lm_head":
+            continue
+        if head_name in head_remap:
+            labs = input_dic[head_remap[head_name]]
+        else:
+            labs = input_dic[model.head_configs[head_name].target]
+
+        if "logits" in model.head_configs[head_name].loss_fct:
+            preds = sigmoid(preds[labs != IGNORE_INDEX]).detach()
+        else:
+            preds = preds[labs != IGNORE_INDEX].detach()
+        labs = labs[labs != IGNORE_INDEX]
+
+        mse = torch.mean((preds - labs) ** 2)
+
+        metrics[f"{head_name}_pred_avg"] = preds.mean().item()
+        metrics[f"{head_name}_pred_std"] = preds.std().item()
+        metrics[f"{head_name}_label_avg"] = labs.float().mean().item()
+        metrics[f"{head_name}_mse"] = mse.item()
+        metrics[f"{head_name}_mae"] = torch.abs(preds - labs).mean().item()
+
+    return metrics
+
+
+@torch.inference_mode()
 def compute_classification_head_metrics(
     outputs: HeadedModelOutput,
     input_dic: dict[str, torch.Tensor],
@@ -109,4 +152,5 @@ class EvaluateFirstStepCallback(TrainerCallback):
 compute_metrics_functions = dict(
     compute_classification_head_metrics=compute_classification_head_metrics,
     compute_policy_metrics=compute_policy_metrics,
+    compute_value_metrics=compute_value_metrics,
 )
