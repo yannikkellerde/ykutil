@@ -1,4 +1,5 @@
 import sqlite3
+from ykutil import log
 
 
 def merge_databases(target_db: str, source_dbs: list[str]):

@@ -22,7 +22,7 @@ def beautify_json(json_str: str):
 def describe_dataset(
     ds_name: str,
     tokenizer_name: str = None,
-    show_rows: tuple = (0, 3),
+    show_rows: tuple = (0,),
     zip_labels=False,
 ):
     from datasets import Dataset
@@ -72,7 +72,7 @@ def do_describe_dataset():
     parser = argparse.ArgumentParser()
     parser.add_argument("ds_name", type=str)
     parser.add_argument("--tokenizer_name", type=str, default=None)
-    parser.add_argument("--show_rows", type=int, nargs="+", default=(0, 3))
+    parser.add_argument("--show_rows", type=int, nargs="+", default=(0,))
     parser.add_argument("--zip_labels", action="store_true")
     args = parser.parse_args()
     return describe_dataset(
