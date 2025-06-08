@@ -1,6 +1,7 @@
 import inspect
 import logging
 import os
+from logging.handlers import RotatingFileHandler
 
 if not "log_util" in logging.Logger.manager.loggerDict:
     logger = logging.getLogger("log_util")
@@ -19,10 +20,13 @@ level_map = {
 }
 
 
-def add_file_handler(file_path, level=logging.INFO):
+def add_file_handler(file_path, level=logging.INFO, max_bytes=None):
     if isinstance(level, str):
         level = level_map[level.upper()]
-    fl = logging.FileHandler(file_path, mode="w")
+    if max_bytes:
+        fl = RotatingFileHandler(file_path, maxBytes=max_bytes, backupCount=0, mode="w")
+    else:
+        fl = logging.FileHandler(file_path, mode="w")
     fl.setLevel(level)
     fl.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S"))
     logger.addHandler(fl)
