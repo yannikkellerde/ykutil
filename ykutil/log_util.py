@@ -3,6 +3,71 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
+
+class RotatingFileHandle:
+    """
+    A file-like wrapper that automatically rotates log files when they exceed a size limit.
+    When the file reaches max_size_mb, it keeps only the most recent portion of the content.
+    """
+
+    def __init__(self, filepath: str, max_size_mb: int = 10):
+        self.filepath = filepath
+        self.max_size_bytes = max_size_mb * 1024 * 1024
+        self.handle = open(filepath, "w")
+
+    def write(self, data: str):
+        self.handle.write(data)
+        self.handle.flush()
+
+        # Check file size and rotate if necessary
+        if os.path.getsize(self.filepath) > self.max_size_bytes:
+            self._rotate_file()
+
+    def _rotate_file(self):
+        """Keep the last 50% of the file when rotating"""
+        self.handle.close()
+
+        try:
+            # Read the file content
+            with open(self.filepath, "r") as f:
+                content = f.read()
+
+            # Keep only the last 50% of content (by character count)
+            keep_size = len(content) // 2
+            new_content = content[-keep_size:] if keep_size > 0 else ""
+
+            # Write back the truncated content
+            with open(self.filepath, "w") as f:
+                if new_content:
+                    f.write("=== LOG ROTATED - OLDER ENTRIES REMOVED ===\n")
+                    f.write(new_content)
+        except Exception as e:
+            # If rotation fails, just truncate the file
+            with open(self.filepath, "w") as f:
+                f.write(f"=== LOG ROTATION ERROR: {e} - FILE TRUNCATED ===\n")
+
+        # Reopen the file handle
+        self.handle = open(self.filepath, "a")
+
+    def flush(self):
+        self.handle.flush()
+
+    def close(self):
+        self.handle.close()
+
+    def fileno(self):
+        return self.handle.fileno()
+
+    def readable(self):
+        return False
+
+    def writable(self):
+        return True
+
+    def seekable(self):
+        return False
+
+
 if not "log_util" in logging.Logger.manager.loggerDict:
     logger = logging.getLogger("log_util")
     logger.setLevel(logging.DEBUG)
