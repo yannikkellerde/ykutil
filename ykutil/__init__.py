@@ -9,7 +9,13 @@ from .data_model import (
     summed_stat_dc,
     undefaultdict,
 )
-from .log_util import add_file_handler, log, RotatingFileHandle
+from .log_util import (
+    add_file_handler,
+    log,
+    RotatingFileHandle,
+    TruncatingFileHandler,
+    delete_first_n_bytes,
+)
 from .multiproc import apply_args_and_kwargs, run_in_parallel, starmap_with_kwargs
 from .sql import merge_databases
 from .python import (
@@ -163,4 +169,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.17"
+__version__ = "0.0.18"
