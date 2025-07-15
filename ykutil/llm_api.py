@@ -10,11 +10,23 @@ class SglangModelWrapper:
         self.host = host
         self.model_name = model_name
 
-    def complete(self, messages: list[dict[str, str]], **kwargs) -> str:
+    def complete(
+        self, messages: list[dict[str, str]], max_tokens: int = 128, **kwargs
+    ) -> str:
         response = requests.post(
             urljoin(self.host, "/v1/chat/completions"),
-            json={"model": self.model_name, "messages": messages, **kwargs},
+            json={
+                "model": self.model_name,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                **kwargs,
+            },
         )
+        print("Got response", response.json())
+        if response.status_code != 200:
+            raise requests.exceptions.HTTPError(
+                f"Error: {response.status_code} {response.json()}"
+            )
         return response.json()["choices"][0]["message"]["content"]
 
 

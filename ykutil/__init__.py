@@ -27,6 +27,7 @@ from .python import (
     chunk_list,
     count_sublist_occurrences,
     dict_percentages,
+    dict_with,
     dict_without,
     flatten,
     first_true,
@@ -66,12 +67,14 @@ from .json_util import FlexibleJSONEncoder
 from .tools import bulk_rename, random_string
 from .types_util import T, describe_type
 from .os_tools import search_file_in_folder, find_all_file_paths
-from .statistics import (
-    Statlogger,
-    Welfords,
-    compute_metric,
-    monte_carlo_bernoulli_p_value,
-)
+
+if find_spec("numpy") is not None:
+    from .statistics import (
+        Statlogger,
+        Welfords,
+        compute_metric,
+        monte_carlo_bernoulli_p_value,
+    )
 
 if find_spec("matplotlib") is not None:
     from .plotting import barplot_annotate_brackets
@@ -109,6 +112,7 @@ if find_spec("openai") is not None and find_spec("pydantic") is not None:
         ModelWrapper,
         human_readable_parse,
         local_image_to_data_url,
+        OpenAIModelWrapper,
     )
 
 if find_spec("pydantic") is not None and find_spec("yaml") is not None:
@@ -158,11 +162,19 @@ if find_spec("torch") is not None:
         )
 
         if find_spec("datasets") is not None:
-            from .dataset import colorcode_dataset, colorcode_entry, describe_dataset
+            from .dataset import (
+                colorcode_dataset,
+                colorcode_entry,
+                count_tokens_in_dataset,
+                describe_dataset,
+            )
 
         if find_spec("transformer_heads") is not None:
             if find_spec("peft") is not None:
-                from .peft_util import load_maybe_peft_model_tokenizer
+                from .peft_util import (
+                    load_maybe_peft_model_tokenizer,
+                    load_unsloth_model_for_inference,
+                )
             from .evaluation import (
                 EvaluateFirstStepCallback,
                 compute_classification_head_metrics,

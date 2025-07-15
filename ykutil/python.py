@@ -560,6 +560,14 @@ def removesuffixes(lst: list[T], suffix: Iterable[T]) -> list[T]:
     return lst
 
 
+def dict_with(d: dict[str, U], **kwargs: U) -> dict[str, U]:
+    """
+    >>> dict_with({"a": 1, "b": 2}, b=3)
+    {'a': 1, 'b': 3}
+    """
+    return {k: kwargs.get(k, v) for k, v in d.items()}
+
+
 def dict_without(d: dict[T, U], without: str | Iterable[T]) -> dict[T, U]:
     """
     >>> dict_without({"a": 1, "b": 2, "c": 3}, "a")

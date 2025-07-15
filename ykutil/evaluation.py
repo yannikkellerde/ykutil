@@ -131,6 +131,7 @@ def compute_classification_head_metrics(
         recall = (preds_round * labs).sum() / labs.sum()
 
         f1 = 2 * precision * recall / (precision + recall)
+        metrics[f"{head_name}_first_pred"] = preds[0].item()
         metrics[f"{head_name}_accuracy"] = correctness.mean().item()
         metrics[f"{head_name}_bias"] = preds.mean().item()
         metrics[f"{head_name}_std"] = preds.std().item()

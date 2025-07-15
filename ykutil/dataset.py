@@ -7,6 +7,16 @@ from ykutil.transformer import load_tk_with_pad_tk
 from ykutil.types_util import describe_type
 
 
+def count_tokens_in_dataset(ds: Dataset):
+    count = 0
+    assert "input_ids" in ds.column_names, f"ds.column_names: {ds.column_names}"
+    for i in range(len(ds)):
+        data = ds[i]
+        in_ids = data["input_ids"]
+        count += len(in_ids)
+    return count
+
+
 def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0,), zip_labels=False):
     pr = lambda p: print("###############\n" + p)
     pr("Metadata:")

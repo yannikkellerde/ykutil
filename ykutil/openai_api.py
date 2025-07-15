@@ -7,7 +7,7 @@ import os
 from mimetypes import guess_type
 from typing import Optional, Type
 
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 from openai._base_client import BaseClient
 
 from ykutil.types_util import T
@@ -86,12 +86,18 @@ class ModelWrapper:
         raise NotImplementedError()
 
 
+class OpenAIModelWrapper(ModelWrapper):
+    def __init__(self, model_name: str, api_key: str):
+        self.client = OpenAI(api_key=api_key)
+        super().__init__(self.client, model_name)
+
+
 class AzureModelWrapper(ModelWrapper):
     def __init__(
         self,
         model_name: str = "gpt-4o",
         log_file=None,
-        api_version="2024-08-01-preview",
+        api_version="2024-12-01-preview",
     ):
         self.client = AzureOpenAI(
             api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
@@ -121,6 +127,15 @@ class AzureModelWrapper(ModelWrapper):
             elif "gpt-35" in self.model_name:
                 input_token_cost = 0.0005 / 1000
                 output_token_cost = 0.0015 / 1000
+            elif "gpt-4.1-nano" in self.model_name:
+                input_token_cost = 0.1 / 1_000_000
+                output_token_cost = 0.4 / 1_000_000
+            elif "gpt-4.1-mini" in self.model_name:
+                input_token_cost = 0.4 / 1_000_000
+                output_token_cost = 1.6 / 1_000_000
+            elif "gpt-4.1" in self.model_name:
+                input_token_cost = 2 / 1_000_000
+                output_token_cost = 8 / 1_000_000
             else:
                 raise ValueError(
                     f"Unknown model name: {self.model_name}. Please provide"

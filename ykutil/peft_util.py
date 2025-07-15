@@ -20,6 +20,10 @@ def load_unsloth_model_for_inference(
 ):
     from unsloth import FastLanguageModel
 
+    print(
+        f"Loading unsloth model for inference: {model_path}, load_in_4bit: {load_in_4bit}, dtype: {torch_dtype}, device_map: {device_map}"
+    )
+
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_path,
         max_seq_length=4096,

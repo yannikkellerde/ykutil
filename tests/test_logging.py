@@ -1,4 +1,5 @@
 import logging
+import time
 import asyncio
 from ykutil.log_util import TruncatingFileHandler, RotatingFileHandle
 import os
@@ -28,6 +29,8 @@ async def test_rotating_file_handle():
     # Create RotatingFileHandle
     log_handle = RotatingFileHandle(log_file, max_size_mb=max_size_mb)
     max_size_bytes = int(max_size_mb * 1024 * 1024)
+    if os.path.exists(log_file):
+        os.remove(log_file)
 
     try:
         # Run a command that generates a lot of output
@@ -37,19 +40,20 @@ async def test_rotating_file_handle():
         proc = await asyncio.create_subprocess_shell(
             command, stdout=log_handle, stderr=log_handle
         )
-        await proc.wait()
-
-        # Flush and check file size
-        log_handle.flush()
+        time.sleep(1)
 
         assert os.path.exists(log_file), "Log file should exist"
         file_size = os.path.getsize(log_file)
         print(
             f"Final file size: {file_size} bytes, Max allowed: {max_size_bytes} bytes"
         )
+        # Flush and check file size
+        log_handle.flush()
+        await proc.wait()
 
         # File size should not exceed max_size_bytes by much (allowing for some overhead from rotation message)
         # We allow some buffer for the rotation message that gets added
+        assert file_size > 0, "File size should be greater than 0"
         assert (
             file_size <= max_size_bytes + 1000
         ), f"File size {file_size} exceeds limit {max_size_bytes}"

@@ -239,6 +239,9 @@ level_map = {
 
 
 def add_file_handler(file_path, level=logging.INFO, max_bytes=None):
+    file_dir = os.path.dirname(file_path)
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir, exist_ok=True)
     if isinstance(level, str):
         level = level_map[level.upper()]
     if max_bytes:
