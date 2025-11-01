@@ -681,6 +681,17 @@ def unique_n_times(
     return result
 
 
+def generate_random_with_cross_sum(n: int):
+    left_over = n
+    digits = []
+    while left_over > 9:
+        digit = random.randint(0, 9)
+        digits.append(digit)
+        left_over -= digit
+    digits.append(left_over)
+    return "".join(map(str, digits))
+
+
 if __name__ == "__main__":
     import doctest
 

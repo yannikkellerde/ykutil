@@ -4,9 +4,17 @@ import json
 from ast import literal_eval
 
 from fire import Fire
+from importlib.util import find_spec
 
-from ykutil.dataset import colorcode_entry, count_token_sequence
-from ykutil.dataset import describe_dataset as ds_describe_dataset
+if find_spec("pandas") is not None:
+    from ykutil.pandas_util import df_to_csv
+if (
+    find_spec("datasets") is not None
+    and find_spec("transformers") is not None
+    and find_spec("torch") is not None
+):
+    from ykutil.dataset import colorcode_entry, count_token_sequence
+    from ykutil.dataset import describe_dataset as ds_describe_dataset
 from ykutil.tools import bulk_rename
 from ykutil.sql import merge_databases
 
@@ -144,3 +152,10 @@ def do_beautify_json():
     parser.add_argument("json_str", type=str)
     args = parser.parse_args()
     return beautify_json(json_str=args.json_str)
+
+
+def do_df_to_csv():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename", type=str)
+    args = parser.parse_args()
+    return df_to_csv(args.filename)

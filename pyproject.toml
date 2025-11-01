@@ -7,7 +7,7 @@ dynamic = ["version"]
 dependencies = [
   "tqdm"
 ]
-requires-python = ">= 3.10"
+requires-python = ">= 3.9"
 authors = [
   {name = "Yannik Keller", email = "yannik@kelnet.de"},
 ]
@@ -31,3 +31,4 @@ merge_sql_databases = "ykutil.executable:do_merge_databases"
 merge_sql_database_folder = "ykutil.executable:do_merge_database_folder"
 llm_process_folder = "ykutil.llm_api:do_process_folder"
 llm_process_file = "ykutil.llm_api:do_process_file"
+df_to_csv = "ykutil.executable:do_df_to_csv"

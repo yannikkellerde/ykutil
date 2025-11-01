@@ -62,6 +62,7 @@ from .python import (
     update_running_avg,
     dictsum,
     vector_sum,
+    generate_random_with_cross_sum,
 )
 from .json_util import FlexibleJSONEncoder
 from .tools import bulk_rename, random_string
@@ -104,12 +105,13 @@ if find_spec("pandera") is not None:
     from .pandera_util import empty_dataframe_from_model
 
 if find_spec("pandas") is not None:
-    from .pandas_util import expand_json_cols
+    from .pandas_util import expand_json_cols, df_to_csv
 
 if find_spec("openai") is not None and find_spec("pydantic") is not None:
     from .openai_api import (
         AzureModelWrapper,
         ModelWrapper,
+        BatchAPIWrapper,
         human_readable_parse,
         local_image_to_data_url,
         OpenAIModelWrapper,

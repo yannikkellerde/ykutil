@@ -30,9 +30,11 @@ def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0,), zip_labels=Fal
         example = ds[i]
         if "input_ids" in example:
             if tokenizer is None:
-                raise ValueError(
-                    "tokenizer is required to show rows for token datasets"
-                )
+                print("Input IDs:", example["input_ids"][-40:])
+                print("Labels:", example["labels"][-40:])
+                # raise ValueError(
+                #    "tokenizer is required to show rows for token datasets"
+                # )
             else:
                 if zip_labels:
                     assert "labels" in example

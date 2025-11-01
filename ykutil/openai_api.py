@@ -9,9 +9,11 @@ from typing import Optional, Type
 
 from openai import AzureOpenAI, OpenAI
 from openai._base_client import BaseClient
+from openai.types.chat import ChatCompletion
 
 from ykutil.types_util import T
 from ykutil.log_util import log
+from ykutil.pydantic_models import BatchResponse
 
 
 # Source: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/gpt-with-vision?tabs=rest
@@ -44,17 +46,16 @@ class ModelWrapper:
         self.stats = {"requests": 0, "input_tokens": 0, "completion_tokens": 0}
 
     def complete(self, messages: list[dict[str, str]], **kwargs) -> str:
-        response = self.client.chat.completions.create(
+
+        response: ChatCompletion = self.client.chat.completions.create(
             model=self.model_name, messages=messages, **kwargs
         )
         self.stats["requests"] += 1
         self.stats["input_tokens"] += response.usage.prompt_tokens
         self.stats["completion_tokens"] += response.usage.completion_tokens
         if self.log_file is not None:
-            msg_copy = messages.copy()
-            msg_copy.append(response.choices[0].message.dict())
             with open(self.log_file, "a") as f:
-                f.write(json.dumps(msg_copy) + ",\n")
+                f.write(json.dumps(response.model_dump()) + ",\n")
         out = response.choices[0].message.content
         if out is None:
             log("Bad response", response, level="warn")
@@ -95,7 +96,7 @@ class OpenAIModelWrapper(ModelWrapper):
 class AzureModelWrapper(ModelWrapper):
     def __init__(
         self,
-        model_name: str = "gpt-4o",
+        model_name: str = "gpt-5",
         log_file=None,
         api_version="2024-12-01-preview",
     ):
@@ -136,6 +137,9 @@ class AzureModelWrapper(ModelWrapper):
             elif "gpt-4.1" in self.model_name:
                 input_token_cost = 2 / 1_000_000
                 output_token_cost = 8 / 1_000_000
+            elif "gpt-5" in self.model_name:
+                input_token_cost = 1.25 / 1000_000
+                output_token_cost = 10 / 1000_000
             else:
                 raise ValueError(
                     f"Unknown model name: {self.model_name}. Please provide"
@@ -150,7 +154,14 @@ class AzureModelWrapper(ModelWrapper):
 
 
 class BatchAPIWrapper:
-    def __init__(self, model_name, api_version="2024-08-01-preview", tmp_dir="~/tmp"):
+    def __init__(
+        self,
+        model_name,
+        api_version=None,
+        tmp_dir="~/tmp",
+        temperature=1.0,
+        custom_content_filter: Optional[str] = None,
+    ):
         self.client = AzureOpenAI(
             api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
             api_version=api_version,
@@ -162,7 +173,11 @@ class BatchAPIWrapper:
             "method": "POST",
             "url": "/chat/completions",
             "body": {"model": self.model_name, "messages": None},
+            "temperature": temperature,
         }
+        if custom_content_filter is not None:
+            self.job_json["headers"] = {"x-policy-id": custom_content_filter}
+
         self.temp_dir = os.path.expanduser(tmp_dir)
 
     def create_batch_job(self, many_messages: list[list[dict[str, str]]]):
@@ -173,7 +188,10 @@ class BatchAPIWrapper:
                 job["custom_id"] = str(i)
                 f.write(json.dumps(job) + "\n")
 
-        file = self.client.files.create(file=open("test.jsonl", "rb"), purpose="batch")
+        file = self.client.files.create(
+            file=open(os.path.join(self.temp_dir, "batch_job.jsonl"), "rb"),
+            purpose="batch",
+        )
         batch_response = self.client.batches.create(
             input_file_id=file.id,
             endpoint="/chat/completions",
@@ -182,13 +200,14 @@ class BatchAPIWrapper:
 
         return batch_response.id
 
-    def get_result(self, batch_id):
+    def get_result(self, batch_id) -> list[BatchResponse]:
         status = "validating"
         while status not in ("completed", "failed", "canceled"):
-            time.sleep(60)
             batch_response = self.client.batches.retrieve(batch_id)
             status = batch_response.status
             print(f"{datetime.datetime.now()} Batch Id: {batch_id},  Status: {status}")
+            if status not in ("completed", "failed", "canceled"):
+                time.sleep(60)
 
         if batch_response.status == "failed":
             for error in batch_response.errors.data:
@@ -198,11 +217,17 @@ class BatchAPIWrapper:
         if not output_file_id:
             output_file_id = batch_response.error_file_id
 
+        responses = []
+
         if output_file_id:
             file_response = self.client.files.content(output_file_id)
             raw_responses = file_response.text.strip().split("\n")
 
             for raw_response in raw_responses:
                 json_response = json.loads(raw_response)
+                responses.append(json_response)
                 formatted_json = json.dumps(json_response, indent=2)
-                print(formatted_json)
+                with open(os.path.join(self.temp_dir, "batch_results.jsonl"), "a") as f:
+                    f.write(formatted_json + "\n")
+
+        return [BatchResponse.model_validate(x) for x in responses]
