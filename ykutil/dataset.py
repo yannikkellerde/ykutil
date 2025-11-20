@@ -52,6 +52,54 @@ def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0,), zip_labels=Fal
                 print(f"{key}: {value}")
 
 
+def colorcode_example(data: dict, tk: PreTrainedTokenizer, beautify=True, fname=None):
+    from termcolor import colored
+
+    data["input_ids"] = data["input_ids"].squeeze()
+    data["labels"] = data["labels"].squeeze()
+    data["labels"] = data["labels"][data["input_ids"] != tk.eos_token_id]
+    data["input_ids"] = data["input_ids"][data["input_ids"] != tk.eos_token_id]
+    ignores = data["labels"] == IGNORE_INDEX
+    if "weights" in data:
+        print("Max weight:", data["weights"].max())
+        data["weights"] = data["weights"] / data["weights"].max()
+        colors = [
+            "red" if x < 0.33 else "red" if x < 0.67 else "red" for x in data["weights"]
+        ]
+        attr = [
+            ["dark"] if x < 0.33 else None if x < 0.67 else ["underline"]
+            for x in data["weights"]
+        ]
+
+    tok_strs = tk.convert_ids_to_tokens(data["input_ids"])
+    tok_strs = [
+        (
+            x
+            if ignores[i]
+            else colored(
+                x,
+                colors[i] if "weights" in data else "red",
+                attrs=attr[i] if "weights" in data else None,
+            )
+        )
+        for i, x in enumerate(tok_strs)
+    ]
+    msg = "".join(tok_strs)
+    if beautify:
+        msg = (
+            msg.replace("▁", " ")
+            .replace("<0x0A>", "\n")
+            .replace("Ġ", " ")
+            .replace("Ċ", "\n")
+            .replace("<|reserved_special_token_200|>", "\n")
+        )
+    if fname is None:
+        print(msg)
+    else:
+        with open(fname, "w") as f:
+            f.write(msg)
+
+
 def colorcode_dataset(
     dd: DatasetDict,
     tk: PreTrainedTokenizer,
@@ -61,54 +109,10 @@ def colorcode_dataset(
     fname=None,
     beautify=True,
 ):
-    from termcolor import colored
 
     for i in range(num_start, num_end):
         data = dd[data_key][i]
-        data["input_ids"] = data["input_ids"].squeeze()
-        data["labels"] = data["labels"].squeeze()
-        data["labels"] = data["labels"][data["input_ids"] != tk.eos_token_id]
-        data["input_ids"] = data["input_ids"][data["input_ids"] != tk.eos_token_id]
-        ignores = data["labels"] == IGNORE_INDEX
-        if "weights" in data:
-            print("Max weight:", data["weights"].max())
-            data["weights"] = data["weights"] / data["weights"].max()
-            colors = [
-                "red" if x < 0.33 else "red" if x < 0.67 else "red"
-                for x in data["weights"]
-            ]
-            attr = [
-                ["dark"] if x < 0.33 else None if x < 0.67 else ["underline"]
-                for x in data["weights"]
-            ]
-
-        tok_strs = tk.convert_ids_to_tokens(data["input_ids"])
-        tok_strs = [
-            (
-                x
-                if ignores[i]
-                else colored(
-                    x,
-                    colors[i] if "weights" in data else "red",
-                    attrs=attr[i] if "weights" in data else None,
-                )
-            )
-            for i, x in enumerate(tok_strs)
-        ]
-        msg = "".join(tok_strs)
-        if beautify:
-            msg = (
-                msg.replace("▁", " ")
-                .replace("<0x0A>", "\n")
-                .replace("Ġ", " ")
-                .replace("Ċ", "\n")
-                .replace("<|reserved_special_token_200|>", "\n")
-            )
-        if fname is None:
-            print(msg)
-        else:
-            with open(fname, "w") as f:
-                f.write(msg)
+        colorcode_example(data, tk, beautify=beautify, fname=fname)
 
 
 def colorcode_entry(

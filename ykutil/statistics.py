@@ -10,12 +10,14 @@ class Statlogger:
         self.statistics = defaultdict(float)
         self.sum_stats = defaultdict(float)
         self.statnumbers = defaultdict(int)
+        self.categoricals = defaultdict(lambda: defaultdict(int))
         self.timers = dict()
 
     def reset(self):
         self.statistics.clear()
         self.sum_stats.clear()
         self.statnumbers.clear()
+        self.categoricals.clear()
 
     def update(self, key, value):
         self.statistics[key] = (
@@ -25,6 +27,13 @@ class Statlogger:
 
     def update_sum_stat(self, key, value):
         self.sum_stats[key] += value
+
+    def update_categorical(self, category, value):
+        self.categoricals[category][value] += 1
+
+    def get_categorical_percentages(self, category):
+        s = sum(self.categoricals[category].values())
+        return {k: v / s for k, v in self.categoricals[category].items()}
 
     def start_timer(self, key):
         thread_id = threading.get_ident()
@@ -43,11 +52,23 @@ class Statlogger:
             )
         del self.timers[thread_key]
 
-    @property
-    def stats(self):
+    def get_stats(self, percentify_categoricals: bool = True):
         some_dic = dict(self.statistics)
         some_dic.update(self.sum_stats)
+        if percentify_categoricals:
+            cat = {
+                category: self.get_categorical_percentages(category)
+                for category in self.categoricals
+            }
+            some_dic.update(cat)
+        else:
+            some_dic.update(self.categoricals)
         return some_dic
+
+    @property
+    def stats(self):
+        # Mostly backwards compatibility
+        return self.get_stats()
 
 
 class Welfords:

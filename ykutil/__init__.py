@@ -63,6 +63,7 @@ from .python import (
     dictsum,
     vector_sum,
     generate_random_with_cross_sum,
+    transpose_list_dict,
 )
 from .json_util import FlexibleJSONEncoder
 from .tools import bulk_rename, random_string
@@ -167,6 +168,7 @@ if find_spec("torch") is not None:
             from .dataset import (
                 colorcode_dataset,
                 colorcode_entry,
+                colorcode_example,
                 count_tokens_in_dataset,
                 describe_dataset,
             )
@@ -183,4 +185,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.18"
+__version__ = "0.0.19"

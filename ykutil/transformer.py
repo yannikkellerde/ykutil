@@ -70,7 +70,7 @@ def find_tokens_with_str(tokenizer: PreTrainedTokenizer, string: str):
     )
 
 
-def load_tk_with_pad_tk(model_path):
+def load_tk_with_pad_tk(model_path) -> PreTrainedTokenizer:
     tk = AutoTokenizer.from_pretrained(model_path)
     if tk.pad_token_id is None:
         tk.pad_token = tk.eos_token

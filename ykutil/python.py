@@ -692,6 +692,14 @@ def generate_random_with_cross_sum(n: int):
     return "".join(map(str, digits))
 
 
+def transpose_list_dict(list_dict: dict[str, list[Any]]) -> list[dict[str, Any]]:
+    """
+    >>> transpose_list_dict({"a": [1, 2, 3], "b": [4, 5, 6]})
+    [{'a': 1, 'b': 4}, {'a': 2, 'b': 5}, {'a': 3, 'b': 6}]
+    """
+    return [dict(zip(list_dict.keys(), values)) for values in zip(*list_dict.values())]
+
+
 if __name__ == "__main__":
     import doctest
 
