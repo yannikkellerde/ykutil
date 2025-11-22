@@ -1,4 +1,5 @@
 import random
+import math
 import re
 from itertools import groupby
 from typing import Any, Iterable, List, Optional
@@ -692,12 +693,29 @@ def generate_random_with_cross_sum(n: int):
     return "".join(map(str, digits))
 
 
-def transpose_list_dict(list_dict: dict[str, list[Any]]) -> list[dict[str, Any]]:
+def nanmean(values: list[float]) -> float:
     """
-    >>> transpose_list_dict({"a": [1, 2, 3], "b": [4, 5, 6]})
-    [{'a': 1, 'b': 4}, {'a': 2, 'b': 5}, {'a': 3, 'b': 6}]
+    >>> nanmean([1, 2, 3, 4, 5, float("nan")])
+    3.0
     """
-    return [dict(zip(list_dict.keys(), values)) for values in zip(*list_dict.values())]
+    valid_values = [v for v in values if not math.isnan(v)]
+    return (
+        float("nan")
+        if len(valid_values) == 0
+        else sum(valid_values) / len(valid_values)
+    )
+
+
+def weighted_nanmean(values: list[float], weights: list[float]) -> float:
+    """
+    >>> weighted_nanmean([1, 2, 3, 4, 5, float("nan")], [1, 1, 1, 1, 1, 0])
+    3.0
+    """
+    valid_muls = [v * w for v, w in zip(values, weights) if not math.isnan(v)]
+    valid_weights = [w for v, w in zip(values, weights) if not math.isnan(v)]
+    return (
+        float("nan") if len(valid_muls) == 0 else sum(valid_muls) / sum(valid_weights)
+    )
 
 
 if __name__ == "__main__":

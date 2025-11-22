@@ -63,7 +63,8 @@ from .python import (
     dictsum,
     vector_sum,
     generate_random_with_cross_sum,
-    transpose_list_dict,
+    nanmean,
+    weighted_nanmean,
 )
 from .json_util import FlexibleJSONEncoder
 from .tools import bulk_rename, random_string
