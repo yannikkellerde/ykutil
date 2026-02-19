@@ -400,7 +400,7 @@ def update_running_avg(
     return (old_avg * old_weight + new_avg * new_weight) / (old_weight + new_weight)
 
 
-def transpose_li_of_dict(lidic: list[dict]):
+def transpose_li_of_dict(lidic: list[dict]) -> dict[Any, list[Any]]:
     """
     >>> transpose_li_of_dict([{"a": 1, "b": 2}, {"a": 3, "b": 4}])
     {'a': [1, 3], 'b': [2, 4]}
@@ -408,7 +408,7 @@ def transpose_li_of_dict(lidic: list[dict]):
     return {k: [d[k] for d in lidic] for k in lidic[0].keys()}
 
 
-def transpose_dict_of_li(d: dict[Any, list]):
+def transpose_dict_of_li(d: dict[Any, list]) -> list[dict[Any, Any]]:
     """
     >>> transpose_dict_of_li({"a": [1, 3], "b": [2, 4]})
     [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]
@@ -716,6 +716,75 @@ def weighted_nanmean(values: list[float], weights: list[float]) -> float:
     return (
         float("nan") if len(valid_muls) == 0 else sum(valid_muls) / sum(valid_weights)
     )
+
+
+def compute_gini(values: list[int | float]) -> float:
+    """Compute the Gini coefficient for a list of values.
+
+    The Gini coefficient measures inequality in a distribution, ranging from
+    0 (perfect equality) to 1 (perfect inequality).
+
+    >>> compute_gini([1, 1, 1, 1])
+    0.0
+    >>> compute_gini([0, 0, 0, 100])
+    0.75
+    >>> round(compute_gini([1, 2, 3, 4, 5]), 4)
+    0.2667
+    >>> compute_gini([10])
+    0.0
+    >>> compute_gini([])
+    0.0
+    """
+    n = len(values)
+    if n <= 1:
+        return 0.0
+
+    total = sum(values)
+    if total == 0:
+        return 0.0
+
+    sorted_values = sorted(values)
+    cumulative = 0.0
+    for i, v in enumerate(sorted_values):
+        cumulative += (i + 1) * v
+
+    return (2 * cumulative - (n + 1) * total) / (n * total)
+
+
+def levenshtein_distance(a: str | list, b: str | list) -> int:
+    """Compute the Levenshtein (edit) distance between two sequences.
+
+    The Levenshtein distance is the minimum number of single-element edits
+    (insertions, deletions, or substitutions) required to change one
+    sequence into another.
+
+    >>> levenshtein_distance("kitten", "sitting")
+    3
+    >>> levenshtein_distance("saturday", "sunday")
+    3
+    >>> levenshtein_distance([1, 2, 3], [1, 3, 2, 4])
+    2
+    >>> levenshtein_distance("", "abc")
+    3
+    >>> levenshtein_distance("same", "same")
+    0
+    """
+    len_a, len_b = len(a), len(b)
+
+    # Use a single row for space optimization
+    prev = list(range(len_b + 1))
+    curr = [0] * (len_b + 1)
+
+    for i in range(1, len_a + 1):
+        curr[0] = i
+        for j in range(1, len_b + 1):
+            if a[i - 1] == b[j - 1]:
+                curr[j] = prev[j - 1]
+            else:
+                curr[j] = 1 + min(prev[j], curr[j - 1], prev[j - 1])
+        prev, curr = curr, prev
+
+    return prev[len_b]
 
 
 if __name__ == "__main__":

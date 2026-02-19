@@ -23,9 +23,11 @@ from .python import (
     anyin,
     approx_list_split,
     approx_number_split,
+    all_sublist_matches,
     check_if_in_other_list,
     chunk_list,
     count_sublist_occurrences,
+    compute_gini,
     dict_percentages,
     dict_with,
     dict_without,
@@ -34,6 +36,7 @@ from .python import (
     identity,
     index_of_sublist_match,
     count_sublist_matches,
+    levenshtein_distance,
     list_find_new,
     list_flip,
     list_in_list,
@@ -83,6 +86,7 @@ if find_spec("matplotlib") is not None:
     from .plotting import barplot_annotate_brackets
 
 if find_spec("requests") is not None:
+    from .requests_tools import wait_for_url
     from .llm_api import (
         process_file,
         process_folder,
@@ -186,4 +190,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.19"
+__version__ = "0.0.20"
