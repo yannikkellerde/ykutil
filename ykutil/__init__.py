@@ -190,4 +190,4 @@ if find_spec("torch") is not None:
                 compute_metrics_functions,
             )
 
-__version__ = "0.0.20"
+__version__ = "0.0.21"

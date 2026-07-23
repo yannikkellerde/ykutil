@@ -17,7 +17,9 @@ def count_tokens_in_dataset(ds: Dataset):
     return count
 
 
-def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0,), zip_labels=False):
+def describe_dataset(
+    ds: Dataset, tokenizer=None, show_rows=(0,), zip_labels=False, row_last_n: int = 40
+):
     pr = lambda p: print("###############\n" + p)
     pr("Metadata:")
     print(ds.info)
@@ -30,8 +32,9 @@ def describe_dataset(ds: Dataset, tokenizer=None, show_rows=(0,), zip_labels=Fal
         example = ds[i]
         if "input_ids" in example:
             if tokenizer is None:
-                print("Input IDs:", example["input_ids"][-40:])
-                print("Labels:", example["labels"][-40:])
+                print("Input IDs:", example["input_ids"][-row_last_n:])
+                if "labels" in example:
+                    print("Labels:", example["labels"][-row_last_n:])
                 # raise ValueError(
                 #    "tokenizer is required to show rows for token datasets"
                 # )

@@ -67,26 +67,28 @@ class RotatingFileHandle:
         """Background thread that reads from pipe and writes to file with rotation logic"""
         import select
 
-        # Use binary mode for the pipe reader to handle all data correctly
-        with os.fdopen(self.read_fd, "rb") as pipe_reader:
+        # Must use os.read on the raw fd. Buffered io.fdopen(...).read(n) blocks on
+        # pipes until n bytes or EOF, and EOF never arrives while we keep write_fd open.
+        try:
             while not self._stop_thread:
-                # Use select to check if data is available (non-blocking)
-                ready, _, _ = select.select([pipe_reader], [], [], 0.1)
-                if ready:
-                    try:
-                        # Read available data in binary mode
-                        data_bytes = pipe_reader.read(8192)  # Read in chunks
-                        if data_bytes:
-                            # Decode to string for writing to text file
-                            data = data_bytes.decode("utf-8", errors="ignore")
-                            self._write_to_file(data)
-                        else:
-                            # EOF reached
-                            break
-                    except Exception as e:
-                        # Handle any errors in reading/writing
-                        print(f"Error in pipe reader: {e}")
-                        break
+                ready, _, _ = select.select([self.read_fd], [], [], 0.1)
+                if not ready:
+                    continue
+                try:
+                    data_bytes = os.read(self.read_fd, 8192)
+                    if data_bytes:
+                        data = data_bytes.decode("utf-8", errors="ignore")
+                        self._write_to_file(data)
+                    else:
+                        break  # EOF
+                except OSError as e:
+                    print(f"Error in pipe reader: {e}")
+                    break
+        finally:
+            try:
+                os.close(self.read_fd)
+            except OSError:
+                pass
 
     def _write_to_file(self, data: str):
         """Write data to file with rotation logic"""
@@ -148,18 +150,15 @@ class RotatingFileHandle:
                 pass
 
     def flush(self):
-        """Flush the pipe"""
-        try:
-            os.fsync(self.write_fd)
-        except:
-            pass
+        """No-op for the pipe; the reader thread writes through with its own flush."""
+        pass
 
     def close(self):
         """Close the handle and stop background thread"""
         self._stop_thread = True
         try:
             os.close(self.write_fd)
-        except:
+        except OSError:
             pass
         if self._thread.is_alive():
             self._thread.join(timeout=1.0)

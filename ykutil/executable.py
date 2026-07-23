@@ -32,6 +32,7 @@ def describe_dataset(
     tokenizer_name: str = None,
     show_rows: tuple = (0,),
     zip_labels=False,
+    row_last_n: int = 40,
 ):
     from datasets import Dataset
     from transformers import AutoTokenizer
@@ -40,7 +41,7 @@ def describe_dataset(
     tokenizer = (
         AutoTokenizer.from_pretrained(tokenizer_name) if tokenizer_name else None
     )
-    return ds_describe_dataset(ds, tokenizer, show_rows, zip_labels)
+    return ds_describe_dataset(ds, tokenizer, show_rows, zip_labels, row_last_n)
 
 
 def tokenize(tk: str, text: str, add_special_tokens: bool = False):
@@ -82,12 +83,14 @@ def do_describe_dataset():
     parser.add_argument("--tokenizer_name", type=str, default=None)
     parser.add_argument("--show_rows", type=int, nargs="+", default=(0,))
     parser.add_argument("--zip_labels", action="store_true")
+    parser.add_argument("--row_last_n", type=int, default=40)
     args = parser.parse_args()
     return describe_dataset(
         ds_name=args.ds_name,
         tokenizer_name=args.tokenizer_name,
         show_rows=tuple(args.show_rows),
         zip_labels=args.zip_labels,
+        row_last_n=args.row_last_n,
     )
 
 

@@ -714,7 +714,9 @@ def weighted_nanmean(values: list[float], weights: list[float]) -> float:
     valid_muls = [v * w for v, w in zip(values, weights) if not math.isnan(v)]
     valid_weights = [w for v, w in zip(values, weights) if not math.isnan(v)]
     return (
-        float("nan") if len(valid_muls) == 0 else sum(valid_muls) / sum(valid_weights)
+        float("nan")
+        if sum(valid_weights) == 0
+        else sum(valid_muls) / sum(valid_weights)
     )
 
 
